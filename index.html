@@ -40,6 +40,8 @@
         </div>
         <div id="thumbnail-list"></div>
       </aside>
+      <!-- Sidebar expand button (visible when collapsed) -->
+      <button id="btn-expand-sidebar" class="btn-expand-sidebar hidden" title="Show pages">&#9776;</button>
 
       <!-- Center: Canvas Viewer -->
       <main id="viewer-container">
@@ -57,6 +59,7 @@
         <div id="page-viewer" class="hidden">
           <div id="canvas-wrapper">
             <canvas id="pdf-canvas"></canvas>
+            <div id="text-layer"></div>
             <canvas id="fabric-canvas"></canvas>
           </div>
         </div>

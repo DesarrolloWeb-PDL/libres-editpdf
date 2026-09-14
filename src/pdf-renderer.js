@@ -6,6 +6,7 @@ import * as state from './app.js';
 
 const pdfCanvas = document.getElementById('pdf-canvas');
 const canvasWrapper = document.getElementById('canvas-wrapper');
+const textLayerDiv = document.getElementById('text-layer');
 
 let rendering = false;
 
@@ -41,6 +42,9 @@ export async function renderCurrentPage() {
     ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
     await page.render({ canvasContext: ctx, viewport }).promise;
 
+    // Render text layer for text selection
+    await renderTextLayer(page, viewport);
+
     // Sync fabric canvas size
     if (state.fabricCanvas) {
       state.fabricCanvas.setWidth(viewport.width);
@@ -51,6 +55,32 @@ export async function renderCurrentPage() {
     console.error('renderCurrentPage error:', err);
   } finally {
     rendering = false;
+  }
+}
+
+/**
+ * Render selectable text layer on top of the canvas.
+ */
+async function renderTextLayer(page, viewport) {
+  // Clear previous text layer
+  textLayerDiv.innerHTML = '';
+  textLayerDiv.style.width = viewport.width + 'px';
+  textLayerDiv.style.height = viewport.height + 'px';
+
+  try {
+    const textContent = await page.getTextContent();
+
+    // pdf.js v4+ uses TextLayer class
+    if (pdfjsLib.TextLayer) {
+      const textLayer = new pdfjsLib.TextLayer({
+        textContentSource: textContent,
+        container: textLayerDiv,
+        viewport: viewport,
+      });
+      await textLayer.render();
+    }
+  } catch (err) {
+    console.warn('Text layer rendering failed:', err);
   }
 }
 

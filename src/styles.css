@@ -292,12 +292,59 @@ html, body {
   display: block;
 }
 
+/* Text layer for selectable PDF text */
+#text-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  overflow: hidden;
+  opacity: 0.25;
+  line-height: 1;
+}
+
+#text-layer > span {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  transform-origin: 0% 0%;
+}
+
+#text-layer > span::selection {
+  background: rgba(0, 100, 200, 0.3);
+  color: transparent;
+}
+
+#text-layer > span::-moz-selection {
+  background: rgba(0, 100, 200, 0.3);
+  color: transparent;
+}
+
 #fabric-canvas {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 10;
   cursor: crosshair;
+}
+
+/* Sidebar expand button */
+.btn-expand-sidebar {
+  position: fixed;
+  left: 8px;
+  top: 56px;
+  z-index: 200;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 18px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.btn-expand-sidebar:hover {
+  background: var(--bg-hover);
 }
 
 /* Loading Overlay */

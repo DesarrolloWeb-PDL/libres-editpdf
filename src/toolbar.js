@@ -200,8 +200,17 @@ export function initToolbar() {
   });
 
   // Sidebar toggle
+  const sidebarLeft = document.getElementById('sidebar-left');
+  const btnExpand = document.getElementById('btn-expand-sidebar');
+
   document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
-    document.getElementById('sidebar-left').classList.toggle('collapsed');
+    sidebarLeft.classList.add('collapsed');
+    btnExpand.classList.remove('hidden');
+  });
+
+  btnExpand.addEventListener('click', () => {
+    sidebarLeft.classList.remove('collapsed');
+    btnExpand.classList.add('hidden');
   });
 
   // Keyboard shortcuts
