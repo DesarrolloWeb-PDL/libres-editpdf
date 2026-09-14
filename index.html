@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Editor</title>
+  <link rel="icon" type="image/x-icon" href="/icon.ico" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar -->
+    <header id="top-bar">
+      <div class="top-bar-left">
+        <img src="/logo.svg" alt="PDF Editor" class="app-logo-img" />
+        <span class="app-logo">PDF Editor</span>
+      </div>
+      <div class="top-bar-center">
+        <button id="btn-open-file" class="btn btn-primary" title="Open PDF">
+          <span class="icon">&#128194;</span> Open
+        </button>
+        <button id="btn-undo" class="btn btn-icon" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
+        <button id="btn-redo" class="btn btn-icon" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
+      </div>
+      <div class="top-bar-right">
+        <button id="btn-export" class="btn btn-accent" title="Export PDF" disabled>
+          <span class="icon">&#128229;</span> Export
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div id="main-layout">
+      <!-- Left Sidebar: Thumbnails -->
+      <aside id="sidebar-left" class="sidebar">
+        <div class="sidebar-header">
+          <span>Pages</span>
+          <button id="btn-toggle-sidebar" class="btn btn-icon" title="Toggle sidebar">&#9776;</button>
+        </div>
+        <div id="thumbnail-list"></div>
+      </aside>
+
+      <!-- Center: Canvas Viewer -->
+      <main id="viewer-container">
+        <!-- Drop Zone -->
+        <div id="drop-zone" class="drop-zone">
+          <div class="drop-zone-content">
+            <div class="drop-icon">&#128196;</div>
+            <h2>Drop PDF files here</h2>
+            <p>or</p>
+            <button id="btn-browse" class="btn btn-primary">Browse Files</button>
+            <input type="file" id="file-input" accept=".pdf" multiple hidden />
+          </div>
+        </div>
+        <!-- Page Viewer (hidden until PDF loaded) -->
+        <div id="page-viewer" class="hidden">
+          <div id="canvas-wrapper">
+            <canvas id="pdf-canvas"></canvas>
+            <canvas id="fabric-canvas"></canvas>
+          </div>
+        </div>
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="hidden">
+          <div class="spinner"></div>
+          <p>Loading PDF...</p>
+        </div>
+      </main>
+
+      <!-- Right Sidebar: Tool Properties -->
+      <aside id="sidebar-right" class="sidebar">
+        <div class="sidebar-header">
+          <span>Tools</span>
+        </div>
+        <div id="tool-properties">
+          <!-- Tool buttons -->
+          <div class="tool-group">
+            <button class="tool-btn active" data-tool="select" title="Select (V)">
+              <span>&#128270;</span>
+              <small>Select</small>
+            </button>
+            <button class="tool-btn" data-tool="text" title="Add Text (T)">
+              <span>T</span>
+              <small>Text</small>
+            </button>
+            <button class="tool-btn" data-tool="image" title="Add Image (I)">
+              <span>&#127748;</span>
+              <small>Image</small>
+            </button>
+            <button class="tool-btn" data-tool="pen" title="Pen (P)">
+              <span>&#9998;</span>
+              <small>Pen</small>
+            </button>
+            <button class="tool-btn" data-tool="highlighter" title="Highlighter (H)">
+              <span>&#128396;</span>
+              <small>Highlight</small>
+            </button>
+            <button class="tool-btn" data-tool="rect" title="Rectangle (R)">
+              <span>&#9645;</span>
+              <small>Rect</small>
+            </button>
+            <button class="tool-btn" data-tool="circle" title="Circle (C)">
+              <span>&#9711;</span>
+              <small>Circle</small>
+            </button>
+            <button class="tool-btn" data-tool="line" title="Line (L)">
+              <span>&#9585;</span>
+              <small>Line</small>
+            </button>
+            <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
+              <span>&#9003;</span>
+              <small>Erase</small>
+            </button>
+          </div>
+
+          <!-- Tool Options -->
+          <div id="tool-options" class="tool-options">
+            <!-- Text options -->
+            <div id="opt-text" class="opt-panel hidden">
+              <label>Font</label>
+              <select id="opt-font">
+                <option value="Helvetica">Helvetica</option>
+                <option value="Times Roman">Times Roman</option>
+                <option value="Courier">Courier</option>
+              </select>
+              <label>Size</label>
+              <input type="number" id="opt-font-size" value="16" min="6" max="200" />
+              <label>Color</label>
+              <input type="color" id="opt-text-color" value="#000000" />
+              <label><input type="checkbox" id="opt-bold" /> Bold</label>
+              <label><input type="checkbox" id="opt-italic" /> Italic</label>
+            </div>
+            <!-- Drawing options -->
+            <div id="opt-draw" class="opt-panel hidden">
+              <label>Color</label>
+              <input type="color" id="opt-stroke-color" value="#000000" />
+              <label>Width</label>
+              <input type="range" id="opt-stroke-width" min="1" max="20" value="3" />
+              <span id="opt-stroke-width-val">3px</span>
+              <label>Opacity</label>
+              <input type="range" id="opt-opacity" min="0.1" max="1" step="0.1" value="1" />
+              <span id="opt-opacity-val">100%</span>
+            </div>
+            <!-- Image options -->
+            <div id="opt-image" class="opt-panel hidden">
+              <button id="btn-add-image" class="btn btn-small">Choose Image</button>
+              <input type="file" id="image-input" accept="image/png,image/jpeg,image/svg+xml" hidden />
+              <label>Opacity</label>
+              <input type="range" id="opt-img-opacity" min="0.1" max="1" step="0.1" value="1" />
+            </div>
+          </div>
+
+          <!-- Page Operations -->
+          <div class="tool-group page-ops">
+            <h4>Page Ops</h4>
+            <button id="btn-rotate-cw" class="btn btn-small" title="Rotate 90° CW">↻ CW</button>
+            <button id="btn-rotate-ccw" class="btn btn-small" title="Rotate 90° CCW">↺ CCW</button>
+            <button id="btn-rotate-180" class="btn btn-small" title="Rotate 180°">180°</button>
+            <button id="btn-delete-page" class="btn btn-small btn-danger" title="Delete selected pages">Delete</button>
+            <button id="btn-duplicate-page" class="btn btn-small" title="Duplicate page">Duplicate</button>
+          </div>
+
+          <!-- Split/Merge -->
+          <div class="tool-group split-merge">
+            <h4>Split / Merge</h4>
+            <button id="btn-split-selected" class="btn btn-small">Split Selected</button>
+            <button id="btn-split-range" class="btn btn-small">Split by Range</button>
+            <button id="btn-split-n" class="btn btn-small">Split every N</button>
+            <button id="btn-merge-all" class="btn btn-small">Merge All PDFs</button>
+          </div>
+
+          <!-- Batch Selection -->
+          <div class="tool-group selection-info">
+            <span id="selection-count">0 pages selected</span>
+            <button id="btn-select-all" class="btn btn-small">Select All</button>
+            <button id="btn-deselect-all" class="btn btn-small">Deselect</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Bottom Bar -->
+    <footer id="bottom-bar">
+      <div class="nav-controls">
+        <button id="btn-prev-page" class="btn btn-icon" disabled>&#9664;</button>
+        <input type="number" id="page-number" value="1" min="1" />
+        <span id="page-count">/ 0</span>
+        <button id="btn-next-page" class="btn btn-icon" disabled>&#9654;</button>
+      </div>
+      <div class="zoom-controls">
+        <button id="btn-zoom-out" class="btn btn-icon">−</button>
+        <span id="zoom-level">100%</span>
+        <button id="btn-zoom-in" class="btn btn-icon">+</button>
+        <button id="btn-fit-width" class="btn btn-small">Fit Width</button>
+        <button id="btn-fit-page" class="btn btn-small">Fit Page</button>
+      </div>
+    </footer>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div id="modal" class="modal">
+        <div class="modal-header">
+          <span id="modal-title"></span>
+          <button id="btn-modal-close" class="btn btn-icon">&times;</button>
+        </div>
+        <div id="modal-body"></div>
+        <div class="modal-footer">
+          <button id="btn-modal-cancel" class="btn">Cancel</button>
+          <button id="btn-modal-ok" class="btn btn-primary">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container"></div>
+  </div>
+
+  <input type="file" id="hidden-file-input" accept=".pdf" multiple hidden />
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
