@@ -87,6 +87,15 @@ export function initFabricCanvas() {
     canvas.on('mouse:move', onMouseMove);
     canvas.on('mouse:up', onMouseUp);
 
+    // Double-click to edit text objects
+    canvas.on('mouse:dblclick', (opt) => {
+      if (opt.target && opt.target.type === 'i-text') {
+        canvas.setActiveObject(opt.target);
+        opt.target.enterEditing();
+        canvas.renderAll();
+      }
+    });
+
     canvas.on('object:modified', () => state.emit('annotationChanged'));
     canvas.on('object:added', () => state.emit('annotationChanged'));
 
@@ -189,9 +198,29 @@ export function applyTool(tool) {
 
 function onMouseDown(opt) {
   const tool = state.activeTool;
+  const target = opt.target; // what was clicked on
 
-  // Text placement mode
-  if (textPlacementMode || tool === 'text') {
+  // Text tool: place text on empty space, but let existing objects be selected
+  if (tool === 'text') {
+    // If clicked on an existing object, let Fabric.js handle selection
+    if (target) return;
+    // Place new text on empty space
+    const pointer = canvas.getPointer(opt.e);
+    addText({
+      left: pointer.x, top: pointer.y,
+      font: document.getElementById('opt-font').value,
+      fontSize: parseInt(document.getElementById('opt-font-size').value, 10),
+      color: document.getElementById('opt-text-color').value,
+      bold: document.getElementById('opt-bold').checked,
+      italic: document.getElementById('opt-italic').checked,
+    });
+    // Switch to select mode so user can edit the text they just placed
+    state.setActiveTool('select');
+    return;
+  }
+
+  // Text placement mode (from keyboard shortcut)
+  if (textPlacementMode) {
     textPlacementMode = false;
     const pointer = canvas.getPointer(opt.e);
     addText({
