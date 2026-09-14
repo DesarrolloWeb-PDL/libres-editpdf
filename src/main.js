@@ -6,6 +6,7 @@ import { initToolbar, handleFiles } from './toolbar.js';
 import { initFabricCanvas, applyTool, saveAnnotations, loadAnnotations, pageKey } from './canvas-overlay.js';
 import { renderCurrentPage } from './pdf-renderer.js';
 import { rebuildThumbnails, highlightActive, saveCurrentPageAnnotations, loadPageAnnotations } from './thumbnail-panel.js';
+import { initTextEdit } from './text-edit.js';
 import { showToast } from './utils.js';
 
 // ---- Global error handlers ----
@@ -25,6 +26,9 @@ window.addEventListener('unhandledrejection', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   // Init toolbar
   initToolbar();
+
+  // Init text editing (redact & replace)
+  initTextEdit();
 
   // ---- Wire up state events ----
 
