@@ -66,6 +66,16 @@ export function initFabricCanvas() {
       console.log('[PDF-ED] Wrapper sized:', container.style.width, 'x', container.style.height);
     }
 
+    // Debug: check upper-canvas (the one that captures events)
+    const upperCanvas = canvas.upperCanvasEl;
+    if (upperCanvas) {
+      console.log('[PDF-ED] Upper canvas:', upperCanvas.width, 'x', upperCanvas.height);
+      console.log('[PDF-ED] Upper canvas z-index:', getComputedStyle(upperCanvas).zIndex);
+      console.log('[PDF-ED] Upper canvas pointer-events:', getComputedStyle(upperCanvas).pointerEvents);
+    } else {
+      console.log('[PDF-ED] WARNING: No upper canvas found!');
+    }
+
     state.setFabricCanvas(canvas);
 
     // Track mouse events
