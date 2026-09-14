@@ -36,13 +36,29 @@ export function initFabricCanvas() {
       preserveObjectStacking: true,
     });
 
-    // Ensure the canvas-container wrapper also has z-index
+    // Size the Fabric canvas to match the PDF canvas
+    const pdfCanvas = document.getElementById('pdf-canvas');
+    if (pdfCanvas && pdfCanvas.width > 0) {
+      canvas.setWidth(pdfCanvas.width);
+      canvas.setHeight(pdfCanvas.height);
+    } else {
+      // Fallback: use viewer container size
+      const viewer = document.getElementById('viewer-container');
+      if (viewer) {
+        canvas.setWidth(viewer.clientWidth - 40);
+        canvas.setHeight(viewer.clientHeight - 40);
+      }
+    }
+
+    // Ensure the canvas-container wrapper is properly positioned
     const container = canvas.wrapperEl;
     if (container) {
       container.style.position = 'absolute';
       container.style.top = '0';
       container.style.left = '0';
       container.style.zIndex = '10';
+      container.style.width = canvas.getWidth() + 'px';
+      container.style.height = canvas.getHeight() + 'px';
     }
 
     state.setFabricCanvas(canvas);

@@ -277,7 +277,27 @@ export async function handleFiles(fileList) {
       if (pdfCanvas && pdfCanvas.width > 0) {
         state.fabricCanvas.setWidth(pdfCanvas.width);
         state.fabricCanvas.setHeight(pdfCanvas.height);
+        // Also sync the wrapper container
+        const wrapper = state.fabricCanvas.wrapperEl;
+        if (wrapper) {
+          wrapper.style.width = pdfCanvas.width + 'px';
+          wrapper.style.height = pdfCanvas.height + 'px';
+        }
       }
+      // Re-sync after first render completes
+      setTimeout(() => {
+        const pc = document.getElementById('pdf-canvas');
+        if (pc && pc.width > 0 && state.fabricCanvas) {
+          state.fabricCanvas.setWidth(pc.width);
+          state.fabricCanvas.setHeight(pc.height);
+          const w = state.fabricCanvas.wrapperEl;
+          if (w) {
+            w.style.width = pc.width + 'px';
+            w.style.height = pc.height + 'px';
+          }
+          state.fabricCanvas.renderAll();
+        }
+      }, 200);
     }
   } catch (err) {
     console.error('handleFiles unexpected error:', err);
