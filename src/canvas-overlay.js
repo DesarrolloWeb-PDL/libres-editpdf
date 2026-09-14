@@ -120,6 +120,12 @@ export function applyTool(tool) {
   canvas.defaultCursor = 'default';
   canvas.hoverCursor = 'default';
 
+  // Toggle text layer: only selectable in 'select' mode
+  const textLayer = document.getElementById('text-layer');
+  if (textLayer) {
+    textLayer.classList.toggle('text-select-mode', tool === 'select');
+  }
+
   // Remove temp listeners
   canvas.off('path:created');
 

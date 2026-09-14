@@ -301,6 +301,11 @@ html, body {
   overflow: hidden;
   opacity: 0.25;
   line-height: 1;
+  pointer-events: none; /* Pass through clicks to Fabric.js canvas by default */
+}
+
+#text-layer.text-select-mode {
+  pointer-events: auto; /* Enable text selection only in select mode */
 }
 
 #text-layer > span {
