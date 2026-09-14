@@ -22,11 +22,13 @@ export function setTextPlacementMode(enabled) {
  * Initialise the Fabric.js canvas on top of the PDF canvas.
  */
 export function initFabricCanvas() {
+  console.log('[PDF-ED] initFabricCanvas called');
   const el = document.getElementById('fabric-canvas');
   if (!el) {
-    console.error('canvas-overlay: fabric-canvas element not found');
+    console.error('[PDF-ED] fabric-canvas element NOT found');
     return null;
   }
+  console.log('[PDF-ED] fabric-canvas element found:', el.offsetWidth, 'x', el.offsetHeight);
 
   try {
     canvas = new fabric.Canvas(el, {
@@ -35,14 +37,16 @@ export function initFabricCanvas() {
       selection: true,
       preserveObjectStacking: true,
     });
+    console.log('[PDF-ED] Fabric canvas created. Size:', canvas.getWidth(), 'x', canvas.getHeight());
 
     // Size the Fabric canvas to match the PDF canvas
     const pdfCanvas = document.getElementById('pdf-canvas');
     if (pdfCanvas && pdfCanvas.width > 0) {
       canvas.setWidth(pdfCanvas.width);
       canvas.setHeight(pdfCanvas.height);
+      console.log('[PDF-ED] Sized to pdf-canvas:', pdfCanvas.width, 'x', pdfCanvas.height);
     } else {
-      // Fallback: use viewer container size
+      console.log('[PDF-ED] pdf-canvas not ready, using fallback size');
       const viewer = document.getElementById('viewer-container');
       if (viewer) {
         canvas.setWidth(viewer.clientWidth - 40);
@@ -59,23 +63,27 @@ export function initFabricCanvas() {
       container.style.zIndex = '10';
       container.style.width = canvas.getWidth() + 'px';
       container.style.height = canvas.getHeight() + 'px';
+      console.log('[PDF-ED] Wrapper sized:', container.style.width, 'x', container.style.height);
     }
 
     state.setFabricCanvas(canvas);
 
-    // Track mouse events for shape tools and eraser
-    canvas.on('mouse:down', onMouseDown);
+    // Track mouse events
+    canvas.on('mouse:down', (opt) => {
+      console.log('[PDF-ED] mouse:down fired! tool:', state.activeTool);
+      onMouseDown(opt);
+    });
     canvas.on('mouse:down', eraserDown);
     canvas.on('mouse:move', onMouseMove);
     canvas.on('mouse:up', onMouseUp);
 
-    // When an object is modified, mark dirty for export
     canvas.on('object:modified', () => state.emit('annotationChanged'));
     canvas.on('object:added', () => state.emit('annotationChanged'));
 
+    console.log('[PDF-ED] Fabric canvas init complete');
     return canvas;
   } catch (err) {
-    console.error('canvas-overlay: failed to init Fabric.js canvas:', err);
+    console.error('[PDF-ED] FAILED to init Fabric.js canvas:', err);
     return null;
   }
 }

@@ -270,11 +270,14 @@ export async function handleFiles(fileList) {
     document.getElementById('btn-export').disabled = false;
 
     // Init Fabric.js canvas AFTER viewer is visible (it needs visible dimensions)
+    console.log('[PDF-ED] handleFiles: fabricCanvas exists?', !!state.fabricCanvas);
     if (!state.fabricCanvas) {
       try {
+        console.log('[PDF-ED] Calling initFabricCanvas...');
         initFabricCanvas();
+        console.log('[PDF-ED] After initFabricCanvas, canvas exists?', !!state.fabricCanvas);
       } catch (err) {
-        console.error('Failed to init canvas:', err);
+        console.error('[PDF-ED] Failed to init canvas:', err);
         showToast('Canvas initialization failed', 'error');
       }
     }
