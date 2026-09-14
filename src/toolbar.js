@@ -11,7 +11,7 @@ import {
   rebuildThumbnails, highlightActive, saveCurrentPageAnnotations, loadPageAnnotations,
 } from './thumbnail-panel.js';
 import { renderCurrentPage, fitWidth, fitPage } from './pdf-renderer.js';
-import { initFabricCanvas, applyTool, addText, addImage } from './canvas-overlay.js';
+import { initFabricCanvas, applyTool, addText, addImage, setTextPlacementMode } from './canvas-overlay.js';
 import { loadPDF, renderPageToDataURL } from './pdf-loader.js';
 
 /**
@@ -85,9 +85,9 @@ export function initToolbar() {
     btn.addEventListener('click', () => {
       const tool = btn.dataset.tool;
       state.setActiveTool(tool);
-      // For text and image tools, set up placement handler on next canvas click
+      // For text tool, enable placement mode on next canvas click
       if (tool === 'text') {
-        setupTextPlacement();
+        setTextPlacementMode(true);
       }
     });
   });
@@ -290,25 +290,6 @@ export async function handleFiles(fileList) {
 /**
  * Set up one-time click handler to place text on the canvas.
  */
-function setupTextPlacement() {
-  const handler = (ev) => {
-    const wrapper = document.getElementById('canvas-wrapper');
-    const rect = wrapper.getBoundingClientRect();
-    const x = ev.clientX - rect.left;
-    const y = ev.clientY - rect.top;
-    addText({
-      left: x, top: y,
-      font: document.getElementById('opt-font').value,
-      fontSize: parseInt(document.getElementById('opt-font-size').value, 10),
-      color: document.getElementById('opt-text-color').value,
-      bold: document.getElementById('opt-bold').checked,
-      italic: document.getElementById('opt-italic').checked,
-    });
-    document.removeEventListener('click', handler, true);
-  };
-  setTimeout(() => document.addEventListener('click', handler, { once: true, capture: true }), 50);
-}
-
 function handleKeyboard(e) {
   // Don't intercept if typing in an input
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
@@ -323,7 +304,7 @@ function handleKeyboard(e) {
     state.setActiveTool('select');
   } else if (e.key === 't' || e.key === 'T') {
     state.setActiveTool('text');
-    setupTextPlacement();
+    setTextPlacementMode(true);
   } else if (e.key === 'p' || e.key === 'P') {
     state.setActiveTool('pen');
   } else if (e.key === 'h' || e.key === 'H') {

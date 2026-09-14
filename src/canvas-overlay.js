@@ -9,6 +9,14 @@ let isDrawing = false;
 let drawStart = null;
 let tempShape = null;
 let currentTool = 'select';
+let textPlacementMode = false;
+
+/**
+ * Set text placement mode — next canvas click adds text.
+ */
+export function setTextPlacementMode(enabled) {
+  textPlacementMode = enabled;
+}
 
 /**
  * Initialise the Fabric.js canvas on top of the PDF canvas.
@@ -27,6 +35,15 @@ export function initFabricCanvas() {
       selection: true,
       preserveObjectStacking: true,
     });
+
+    // Ensure the canvas-container wrapper also has z-index
+    const container = canvas.wrapperEl;
+    if (container) {
+      container.style.position = 'absolute';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.zIndex = '10';
+    }
 
     state.setFabricCanvas(canvas);
 
@@ -81,6 +98,7 @@ export function pageKey(idx) {
 export function applyTool(tool) {
   if (!canvas) return;
   currentTool = tool;
+  textPlacementMode = false; // cancel text placement on any tool change
   canvas.isDrawingMode = false;
   canvas.selection = tool === 'select';
   canvas.defaultCursor = 'default';
@@ -131,6 +149,22 @@ export function applyTool(tool) {
 
 function onMouseDown(opt) {
   const tool = state.activeTool;
+
+  // Text placement mode
+  if (textPlacementMode || tool === 'text') {
+    textPlacementMode = false;
+    const pointer = canvas.getPointer(opt.e);
+    addText({
+      left: pointer.x, top: pointer.y,
+      font: document.getElementById('opt-font').value,
+      fontSize: parseInt(document.getElementById('opt-font-size').value, 10),
+      color: document.getElementById('opt-text-color').value,
+      bold: document.getElementById('opt-bold').checked,
+      italic: document.getElementById('opt-italic').checked,
+    });
+    return;
+  }
+
   if (!['rect', 'circle', 'line'].includes(tool)) return;
 
   isDrawing = true;
