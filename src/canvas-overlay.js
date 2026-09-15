@@ -157,12 +157,20 @@ export function applyTool(tool) {
   // In other modes, Fabric canvas captures clicks for drawing/adding objects
   const upperCanvas = canvas.upperCanvasEl;
   const wrapperEl = canvas.wrapperEl;
+  const isSelect = tool === 'select';
   if (upperCanvas) {
-    upperCanvas.style.pointerEvents = (tool === 'select') ? 'none' : 'auto';
+    upperCanvas.style.pointerEvents = isSelect ? 'none' : 'auto';
   }
   if (wrapperEl) {
-    wrapperEl.style.pointerEvents = (tool === 'select') ? 'none' : 'auto';
+    wrapperEl.style.pointerEvents = isSelect ? 'none' : 'auto';
   }
+
+  console.log('[PDF-ED] applyTool:', tool, {
+    textLayerPointerEvents: textLayer ? getComputedStyle(textLayer).pointerEvents : 'N/A',
+    textLayerClass: textLayer?.className,
+    upperCanvasPointerEvents: upperCanvas ? getComputedStyle(upperCanvas).pointerEvents : 'N/A',
+    wrapperPointerEvents: wrapperEl ? getComputedStyle(wrapperEl).pointerEvents : 'N/A',
+  });
 
   // Remove temp listeners
   canvas.off('path:created');
