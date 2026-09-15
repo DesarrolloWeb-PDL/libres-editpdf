@@ -15,6 +15,7 @@ export function initTextEdit() {
 
   // Click on a text span → edit that line
   textLayer.addEventListener('click', (e) => {
+    console.log('[PDF-ED] text-layer click! target:', e.target?.tagName, e.target?.textContent?.substring(0, 30));
     if (state.activeTool !== 'select') return;
 
     const span = e.target;
