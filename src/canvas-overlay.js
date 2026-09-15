@@ -156,8 +156,12 @@ export function applyTool(tool) {
   // In 'select' mode, let clicks pass through to text layer for PDF text selection
   // In other modes, Fabric canvas captures clicks for drawing/adding objects
   const upperCanvas = canvas.upperCanvasEl;
+  const wrapperEl = canvas.wrapperEl;
   if (upperCanvas) {
     upperCanvas.style.pointerEvents = (tool === 'select') ? 'none' : 'auto';
+  }
+  if (wrapperEl) {
+    wrapperEl.style.pointerEvents = (tool === 'select') ? 'none' : 'auto';
   }
 
   // Remove temp listeners
