@@ -69,6 +69,7 @@ async function renderTextLayer(page, viewport) {
 
   try {
     const textContent = await page.getTextContent();
+    console.log('[PDF-ED] textContent items:', textContent.items.length);
 
     // pdf.js v4+ uses TextLayer class
     if (pdfjsLib.TextLayer) {
@@ -78,9 +79,12 @@ async function renderTextLayer(page, viewport) {
         viewport: viewport,
       });
       await textLayer.render();
+      console.log('[PDF-ED] text layer rendered, children:', textLayerDiv.children.length);
+    } else {
+      console.log('[PDF-ED] WARNING: pdfjsLib.TextLayer not available');
     }
   } catch (err) {
-    console.warn('Text layer rendering failed:', err);
+    console.warn('[PDF-ED] Text layer rendering failed:', err);
   }
 }
 

@@ -31,6 +31,8 @@ export function initTextEdit() {
 }
 
 function checkTextSelection() {
+  console.log('[PDF-ED] checkTextSelection called, tool:', state.activeTool);
+  
   // Only show popup when in select mode
   if (state.activeTool !== 'select') {
     hidePopup();
@@ -38,6 +40,8 @@ function checkTextSelection() {
   }
 
   const sel = window.getSelection();
+  console.log('[PDF-ED] selection:', sel ? sel.toString().substring(0, 50) : 'null', 'collapsed:', sel?.isCollapsed);
+  
   if (!sel || sel.isCollapsed || sel.toString().trim() === '') {
     // Don't hide immediately — user might be clicking the button
     setTimeout(() => {
@@ -52,13 +56,18 @@ function checkTextSelection() {
   // Check if selection is inside the text layer
   const range = sel.getRangeAt(0);
   const textLayer = document.getElementById('text-layer');
-  if (!textLayer.contains(range.commonAncestorContainer)) {
+  const inTextLayer = textLayer.contains(range.commonAncestorContainer);
+  console.log('[PDF-ED] selection in text layer:', inTextLayer, 'ancestor:', range.commonAncestorContainer?.nodeName, range.commonAncestorContainer?.className);
+  
+  if (!inTextLayer) {
     hidePopup();
     return;
   }
 
   // Get bounding rect of the selection
   const rect = range.getBoundingClientRect();
+  console.log('[PDF-ED] selection rect:', rect.width, 'x', rect.height, 'at', rect.left, rect.top);
+  
   if (rect.width === 0 || rect.height === 0) {
     hidePopup();
     return;
