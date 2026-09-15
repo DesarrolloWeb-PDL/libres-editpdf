@@ -310,6 +310,9 @@ export async function handleFiles(fileList) {
           state.fabricCanvas.renderAll();
         }
       }, 200);
+
+      // Apply current tool settings (sets pointer-events on upper-canvas)
+      applyTool(state.activeTool);
     }
   } catch (err) {
     console.error('handleFiles unexpected error:', err);
