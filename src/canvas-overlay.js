@@ -153,24 +153,13 @@ export function applyTool(tool) {
     textLayer.classList.toggle('text-select-mode', tool === 'select');
   }
 
-  // In 'select' mode, let clicks pass through to text layer for PDF text selection
-  // In other modes, Fabric canvas captures clicks for drawing/adding objects
-  const upperCanvas = canvas.upperCanvasEl;
+  // In 'select' mode, hide Fabric canvas completely so text layer receives clicks
+  // In other modes, show it for drawing/adding objects
   const wrapperEl = canvas.wrapperEl;
   const isSelect = tool === 'select';
-  if (upperCanvas) {
-    upperCanvas.style.pointerEvents = isSelect ? 'none' : 'auto';
-  }
   if (wrapperEl) {
-    wrapperEl.style.pointerEvents = isSelect ? 'none' : 'auto';
+    wrapperEl.style.display = isSelect ? 'none' : '';
   }
-
-  console.log('[PDF-ED] applyTool:', tool, {
-    textLayerPointerEvents: textLayer ? getComputedStyle(textLayer).pointerEvents : 'N/A',
-    textLayerClass: textLayer?.className,
-    upperCanvasPointerEvents: upperCanvas ? getComputedStyle(upperCanvas).pointerEvents : 'N/A',
-    wrapperPointerEvents: wrapperEl ? getComputedStyle(wrapperEl).pointerEvents : 'N/A',
-  });
 
   // Remove temp listeners
   canvas.off('path:created');
