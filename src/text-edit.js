@@ -1,6 +1,6 @@
 /**
  * text-edit.js – Click-to-edit PDF text.
- * When user clicks on a text span in the text layer,
+ * Listens for clicks on the document. If click is over a text layer span,
  * whites out that line and replaces with editable text.
  */
 import * as state from './app.js';
@@ -10,27 +10,65 @@ import { fabric } from 'fabric';
  * Initialize text editing. Call once after DOM ready.
  */
 export function initTextEdit() {
-  const textLayer = document.getElementById('text-layer');
-  if (!textLayer) return;
-
-  // Click on a text span → edit that line
-  textLayer.addEventListener('click', (e) => {
-    console.log('[PDF-ED] text-layer click! target:', e.target?.tagName, e.target?.textContent?.substring(0, 30));
+  // Use document-level click to bypass z-index stacking issues
+  document.addEventListener('click', (e) => {
     if (state.activeTool !== 'select') return;
+    if (!state.fabricCanvas) return;
 
-    const span = e.target;
-    if (!span || span.tagName !== 'SPAN' || !span.textContent.trim()) return;
+    // Check if click is over the text layer
+    const textLayer = document.getElementById('text-layer');
+    if (!textLayer) return;
+
+    // Find if there's a text layer span under the click
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    if (!target) return;
+
+    // Walk up from target to find a span inside text-layer
+    let span = target;
+    while (span && span !== textLayer && span !== document.body) {
+      span = span.parentElement;
+    }
+    if (span !== textLayer) return; // click was not on text layer
+
+    // The actual span clicked is the one under the cursor
+    const clickedSpan = getSpanAtPoint(e.clientX, e.clientY, textLayer);
+    if (!clickedSpan || !clickedSpan.textContent.trim()) return;
+
     e.preventDefault();
     e.stopPropagation();
 
-    editSpanText(span);
-  });
+    editSpanText(clickedSpan);
+  }, true); // capture phase to run before Fabric.js
+}
 
-  // Prevent double-click from selecting text (we handle it ourselves)
-  textLayer.addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  });
+/**
+ * Find the text layer span at given screen coordinates.
+ */
+function getSpanAtPoint(x, y, textLayer) {
+  // Temporarily make the text layer pointer-events:auto to use elementFromPoint
+  const prev = textLayer.style.pointerEvents;
+  textLayer.style.pointerEvents = 'auto';
+
+  // Hide upper canvas temporarily
+  const upperCanvas = document.querySelector('.upper-canvas');
+  const wrapper = document.querySelector('.canvas-container');
+  const pdfCanvas = document.getElementById('pdf-canvas');
+  if (upperCanvas) upperCanvas.style.pointerEvents = 'none';
+  if (wrapper) wrapper.style.pointerEvents = 'none';
+  if (pdfCanvas) pdfCanvas.style.pointerEvents = 'none';
+
+  const el = document.elementFromPoint(x, y);
+
+  // Restore
+  textLayer.style.pointerEvents = prev;
+  if (upperCanvas) upperCanvas.style.pointerEvents = '';
+  if (wrapper) wrapper.style.pointerEvents = '';
+  if (pdfCanvas) pdfCanvas.style.pointerEvents = '';
+
+  if (el && el.tagName === 'SPAN' && textLayer.contains(el)) {
+    return el;
+  }
+  return null;
 }
 
 /**
