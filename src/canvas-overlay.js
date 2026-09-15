@@ -147,18 +147,25 @@ export function applyTool(tool) {
   canvas.defaultCursor = 'default';
   canvas.hoverCursor = 'default';
 
-  // Toggle text layer: only selectable in 'select' mode
-  const textLayer = document.getElementById('text-layer');
-  if (textLayer) {
-    textLayer.classList.toggle('text-select-mode', tool === 'select');
-  }
-
-  // In 'select' mode, hide Fabric canvas completely so text layer receives clicks
-  // In other modes, show it for drawing/adding objects
+  // In 'select' mode: Fabric canvas stays VISIBLE (so annotations show)
+  // but clicks pass through to text layer for PDF text editing
   const wrapperEl = canvas.wrapperEl;
+  const upperCanvas = canvas.upperCanvasEl;
+  const pdfCanvas = document.getElementById('pdf-canvas');
+  const textLayer = document.getElementById('text-layer');
   const isSelect = tool === 'select';
-  if (wrapperEl) {
-    wrapperEl.style.display = isSelect ? 'none' : '';
+
+  // Upper canvas: blocks events in draw mode, transparent in select mode
+  if (upperCanvas) {
+    upperCanvas.style.pointerEvents = isSelect ? 'none' : 'auto';
+  }
+  // PDF canvas: must be transparent in select mode so text layer receives clicks
+  if (pdfCanvas) {
+    pdfCanvas.style.pointerEvents = isSelect ? 'none' : 'auto';
+  }
+  // Text layer: receives clicks in select mode only
+  if (textLayer) {
+    textLayer.style.pointerEvents = isSelect ? 'auto' : 'none';
   }
 
   // Remove temp listeners
