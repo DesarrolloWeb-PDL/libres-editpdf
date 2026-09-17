@@ -16,6 +16,11 @@ export async function exportPDF() {
     return;
   }
 
+  // Determine which pages to export: selected pages or all pages
+  const selectedIndices = state.selectedPages.size > 0
+    ? [...state.selectedPages].sort((a, b) => a - b)
+    : state.pages.map((_, i) => i);
+
   setLoading(true, 'Exporting PDF...');
   state.emit('exportStarted');
 
@@ -25,8 +30,8 @@ export async function exportPDF() {
 
     const outDoc = await PDFDocument.create();
 
-    // Copy pages in the current order
-    for (let i = 0; i < state.pages.length; i++) {
+    // Copy selected pages in order
+    for (const i of selectedIndices) {
       const { pdfIndex, pageIndex } = state.pages[i];
       const srcBytes = state.pdfs[pdfIndex].pdfBytes;
 
@@ -40,8 +45,9 @@ export async function exportPDF() {
       outDoc.addPage(copied);
     }
 
-    // Flatten annotations: render overlay PNG and embed on each page
-    for (let i = 0; i < state.pages.length; i++) {
+    // Flatten annotations: render overlay PNG and embed on each exported page
+    for (let outIdx = 0; outIdx < selectedIndices.length; outIdx++) {
+      const i = selectedIndices[outIdx];
       const key = pageKey(i);
       const annotationJson = state.pageAnnotations[key];
       if (!annotationJson) continue;
@@ -54,7 +60,7 @@ export async function exportPDF() {
 
       const pngBytes = dataURLToBytes(overlayDataUrl);
       const pngImage = await outDoc.embedPng(pngBytes);
-      const page = outDoc.getPage(i);
+      const page = outDoc.getPage(outIdx);
       const { width, height } = page.getSize();
 
       page.drawImage(pngImage, {
@@ -62,9 +68,16 @@ export async function exportPDF() {
       });
     }
 
+    const fileName = selectedIndices.length < state.pages.length
+      ? 'selected-pages.pdf'
+      : 'edited.pdf';
+
     const pdfBytes = await outDoc.save();
-    downloadBuffer(pdfBytes, 'edited.pdf');
-    showToast('PDF exported successfully', 'success');
+    downloadBuffer(pdfBytes, fileName);
+    const msg = selectedIndices.length < state.pages.length
+      ? `Exported ${selectedIndices.length} page(s) as PDF`
+      : 'PDF exported successfully';
+    showToast(msg, 'success');
   } catch (err) {
     console.error('Export error:', err);
     showToast('Export failed: ' + err.message, 'error');
