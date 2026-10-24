@@ -8,6 +8,7 @@ import { fabric } from 'fabric';
 import { showModal, showToast } from './utils.js';
 import { saveCurrentPageAnnotations } from './thumbnail-panel.js';
 import { pageKey } from './canvas-overlay.js';
+import { t } from './i18n.js';
 
 /**
  * Initialize text editing. Call once after DOM ready.
@@ -42,7 +43,7 @@ export function initTextEdit() {
 
     editSpanText(clickedSpan).catch((err) => {
       console.error('Text edit error:', err);
-      showToast('Text edit failed: ' + err.message, 'error');
+      showToast(t('text.editFailed', { error: err.message }), 'error');
     });
   }, true); // capture phase to run before Fabric.js
 }
@@ -85,13 +86,13 @@ async function editSpanText(span) {
   const canvas = state.fabricCanvas;
   const originalText = span.textContent.trim();
   if (!/^[\x20-\x7e]+$/.test(originalText)) {
-    showToast('This prototype supports printable ASCII text only', 'error');
+    showToast(t('text.asciiOnly'), 'error');
     return;
   }
 
   const editDialog = showModal(
-    'Edit PDF text',
-    '<label for="pdf-text-replacement">Replacement text</label><input id="pdf-text-replacement" type="text" />'
+    t('text.editTitle'),
+    `<label for="pdf-text-replacement">${t('text.replacement')}</label><input id="pdf-text-replacement" type="text" />`
   );
   const replacementInput = document.getElementById('pdf-text-replacement');
   replacementInput.value = originalText;
@@ -103,7 +104,7 @@ async function editSpanText(span) {
   const replacementText = replacementInput.value;
   if (replacementText === originalText) return;
   if (!/^[\x20-\x7e]+$/.test(replacementText)) {
-    showToast('The prototype supports non-empty printable ASCII text only', 'error');
+    showToast(t('text.replacementAsciiOnly'), 'error');
     return;
   }
 
@@ -131,7 +132,7 @@ async function editSpanText(span) {
   const key = pageKey(state.currentPageIndex);
   const edits = state.pageTextEdits[key] || [];
   if (edits.some((edit) => edit.originalText === originalText)) {
-    showToast('This text was already edited on the page', 'error');
+    showToast(t('text.alreadyEdited'), 'error');
     return;
   }
 

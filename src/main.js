@@ -8,6 +8,7 @@ import { renderCurrentPage } from './pdf-renderer.js';
 import { rebuildThumbnails, highlightActive, saveCurrentPageAnnotations, loadPageAnnotations } from './thumbnail-panel.js';
 import { initTextEdit } from './text-edit.js';
 import { showToast } from './utils.js';
+import { initI18n, t } from './i18n.js';
 
 // ---- Global error handlers ----
 
@@ -24,6 +25,8 @@ window.addEventListener('unhandledrejection', (e) => {
 // ---- Bootstrap ----
 
 document.addEventListener('DOMContentLoaded', () => {
+  initI18n();
+
   // Init toolbar
   initToolbar();
 
@@ -49,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     highlightActive();
     updateSelectionCount();
   });
+  document.addEventListener('languagechange', updateSelectionCount);
 
   state.on('toolChanged', () => {
     highlightToolButton();
@@ -110,8 +114,9 @@ function updateUI() {
 }
 
 function updateSelectionCount() {
-  document.getElementById('selection-count').textContent =
-    `${state.selectedPages.size} page${state.selectedPages.size !== 1 ? 's' : ''} selected`;
+  const count = state.selectedPages.size;
+  const key = count === 1 ? 'selection.countOne' : 'selection.count';
+  document.getElementById('selection-count').textContent = t(key, { count });
 }
 
 function highlightToolButton() {

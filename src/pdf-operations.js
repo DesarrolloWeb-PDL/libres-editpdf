@@ -5,6 +5,7 @@ import { PDFDocument } from 'pdf-lib';
 import * as state from './app.js';
 import { showToast, setLoading } from './utils.js';
 import { loadPDF } from './pdf-loader.js';
+import { t } from './i18n.js';
 
 /**
  * Get raw bytes from whatever pdf.pdfBytes currently holds.
@@ -55,7 +56,7 @@ export async function rotatePage(pageGlobalIndex, degrees) {
   const current = page.getRotation().angle;
   page.setRotation((current + degrees + 360) % 360);
   await saveAndReload(pdf, doc);
-  showToast(`Rotated page ${pageGlobalIndex + 1} by ${degrees}°`, 'success');
+  showToast(t('operation.rotated', { page: pageGlobalIndex + 1, degrees }), 'success');
   state.emit('pagesChanged');
 }
 
@@ -64,7 +65,7 @@ export async function rotatePage(pageGlobalIndex, degrees) {
  */
 export async function deletePage(pageGlobalIndex) {
   if (state.pages.length <= 1) {
-    showToast('Cannot delete the only page', 'error');
+    showToast(t('operation.cannotDeleteOnly'), 'error');
     return;
   }
   const { pdfIndex, pageIndex } = state.pages[pageGlobalIndex];
@@ -74,7 +75,7 @@ export async function deletePage(pageGlobalIndex) {
   await saveAndReload(pdf, doc);
   state.removePageTextEdits(pdfIndex, pageIndex);
   state.rebuildPages();
-  showToast(`Deleted page ${pageGlobalIndex + 1}`, 'success');
+  showToast(t('operation.deleted', { page: pageGlobalIndex + 1 }), 'success');
 }
 
 /**
@@ -98,7 +99,7 @@ export async function duplicatePage(pageGlobalIndex) {
 
   state.duplicatePageTextEdits(pdfIndex, pageIndex);
   state.rebuildPages();
-  showToast(`Duplicated page ${pageGlobalIndex + 1}`, 'success');
+  showToast(t('operation.duplicated', { page: pageGlobalIndex + 1 }), 'success');
 }
 
 /**
@@ -106,10 +107,10 @@ export async function duplicatePage(pageGlobalIndex) {
  */
 export async function splitSelected(selectedIndices) {
   if (selectedIndices.length === 0) {
-    showToast('No pages selected — Ctrl+Click thumbnails to select', 'error');
+    showToast(t('operation.selectPages'), 'error');
     return;
   }
-  setLoading(true, 'Splitting pages...');
+  setLoading(true, t('operation.splittingPages'));
   try {
     const newDoc = await PDFDocument.create();
     const pageMap = selectedIndices.map((i) => state.pages[i]);
@@ -128,10 +129,11 @@ export async function splitSelected(selectedIndices) {
 
     const bytes = await newDoc.save();
     downloadSplit(bytes, 'split.pdf');
-    showToast(`Extracted ${selectedIndices.length} pages`, 'success');
+    const key = selectedIndices.length === 1 ? 'operation.extractedOne' : 'operation.extracted';
+    showToast(t(key, { count: selectedIndices.length }), 'success');
   } catch (err) {
     console.error('Split error:', err);
-    showToast('Split failed: ' + err.message, 'error');
+    showToast(t('operation.splitFailed', { error: err.message }), 'error');
   } finally {
     setLoading(false);
   }
@@ -141,17 +143,17 @@ export async function splitSelected(selectedIndices) {
  * Split by range string, e.g. "1-3,5,7-10".
  */
 export async function splitByRange(rangeStr) {
-  setLoading(true, 'Splitting by range...');
+  setLoading(true, t('operation.splittingRange'));
   try {
     const indices = parseRange(rangeStr, state.pages.length);
     if (indices.length === 0) {
-      showToast('Invalid range', 'error');
+      showToast(t('operation.invalidRange'), 'error');
       setLoading(false);
       return;
     }
     await splitSelected(indices.map((i) => i - 1));
   } catch (err) {
-    showToast('Range split failed: ' + err.message, 'error');
+    showToast(t('operation.rangeFailed', { error: err.message }), 'error');
   } finally {
     setLoading(false);
   }
@@ -162,10 +164,10 @@ export async function splitByRange(rangeStr) {
  */
 export async function splitEveryN(n) {
   if (n < 1 || n > state.pages.length) {
-    showToast('Invalid N value', 'error');
+    showToast(t('operation.invalidN'), 'error');
     return;
   }
-  setLoading(true, 'Splitting...');
+  setLoading(true, t('operation.splitting'));
   try {
     for (let start = 0; start < state.pages.length; start += n) {
       const chunk = [];
@@ -174,9 +176,9 @@ export async function splitEveryN(n) {
       }
       await splitSelected(chunk);
     }
-    showToast('Split complete', 'success');
+    showToast(t('operation.splitComplete'), 'success');
   } catch (err) {
-    showToast('Split failed: ' + err.message, 'error');
+    showToast(t('operation.splitFailed', { error: err.message }), 'error');
   } finally {
     setLoading(false);
   }
@@ -187,10 +189,10 @@ export async function splitEveryN(n) {
  */
 export async function mergeAll() {
   if (state.pdfs.length < 2) {
-    showToast('Need at least 2 PDFs to merge', 'error');
+    showToast(t('operation.needTwoPdfs'), 'error');
     return;
   }
-  setLoading(true, 'Merging PDFs...');
+  setLoading(true, t('operation.merging'));
   try {
     const merged = await PDFDocument.create();
     for (const pdf of state.pdfs) {
@@ -201,9 +203,9 @@ export async function mergeAll() {
     }
     const bytes = await merged.save();
     downloadSplit(bytes, 'merged.pdf');
-    showToast('PDFs merged successfully', 'success');
+    showToast(t('operation.mergeSuccess'), 'success');
   } catch (err) {
-    showToast('Merge failed: ' + err.message, 'error');
+    showToast(t('operation.mergeFailed', { error: err.message }), 'error');
   } finally {
     setLoading(false);
   }

@@ -1,6 +1,7 @@
 /**
  * Utility helpers used across the application.
  */
+import { t } from './i18n.js';
 
 /**
  * Show a toast notification.
@@ -21,7 +22,7 @@ export function showToast(message, type = 'info') {
  * @param {boolean} show
  * @param {string} [text]
  */
-export function setLoading(show, text = 'Loading PDF...') {
+export function setLoading(show, text = t('loading.pdf')) {
   const overlay = document.getElementById('loading-overlay');
   if (show) {
     overlay.querySelector('p').textContent = text;

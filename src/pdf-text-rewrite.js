@@ -8,6 +8,7 @@ import {
   PDFRawStream,
   PDFRef,
 } from 'pdf-lib';
+import { t } from './i18n.js';
 
 const TEXT_OBJECT_PATTERN = /\bBT\b([\s\S]*?)\bET\b/g;
 const HEX_TEXT_PATTERN = /<([0-9a-fA-F\s]+)>\s*Tj\b/g;
@@ -23,7 +24,7 @@ export function replacePdfPageText(pdfDoc, pageIndex, originalText, replacementT
   const page = pdfDoc.getPage(pageIndex);
   const contents = page.node.Contents();
   if (!contents) {
-    throw new Error('This page has no editable content stream.');
+    throw new Error(t('text.noContent'));
   }
 
   const streams = contents instanceof PDFArray ? contents.asArray() : [contents];
@@ -60,14 +61,10 @@ export function replacePdfPageText(pdfDoc, pageIndex, originalText, replacementT
   });
 
   if (candidates.length === 0) {
-    throw new Error(
-      'This text is not in a supported single-operation ASCII PDF text block.'
-    );
+    throw new Error(t('text.unsupportedBlock'));
   }
   if (candidates.length > 1) {
-    throw new Error(
-      'This text appears in multiple PDF text blocks; the edit is ambiguous.'
-    );
+    throw new Error(t('text.ambiguousBlock'));
   }
 
   const candidate = candidates[0];
@@ -96,7 +93,7 @@ export function replacePdfPageText(pdfDoc, pageIndex, originalText, replacementT
 
 function assertPrintableAscii(text) {
   if (typeof text !== 'string' || !/^[\x20-\x7e]+$/.test(text)) {
-    throw new Error('The prototype supports non-empty printable ASCII text only.');
+    throw new Error(t('text.replacementAsciiOnly'));
   }
 }
 

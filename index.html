@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF Editor</title>
+  <title>Editor de PDF</title>
   <link rel="icon" type="image/x-icon" href="/icon.ico" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="stylesheet" href="/src/styles.css" />
@@ -17,15 +17,23 @@
         <span class="app-logo">PDF Editor</span>
       </div>
       <div class="top-bar-center">
-        <button id="btn-open-file" class="btn btn-primary" title="Open PDF">
-          <span class="icon">&#128194;</span> Open
+        <button id="btn-open-file" class="btn btn-primary" data-i18n-title="action.open">
+          <span class="icon">&#128194;</span> <span data-i18n="action.open">Abrir</span>
         </button>
-        <button id="btn-undo" class="btn btn-icon" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
-        <button id="btn-redo" class="btn btn-icon" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
+        <button id="btn-undo" class="btn btn-icon" data-i18n-title="action.undo" disabled>&#8630;</button>
+        <button id="btn-redo" class="btn btn-icon" data-i18n-title="action.redo" disabled>&#8631;</button>
       </div>
       <div class="top-bar-right">
-        <button id="btn-export" class="btn btn-accent" title="Export PDF" disabled>
-          <span class="icon">&#128229;</span> Export
+        <label class="language-control" for="language-select">
+          <span data-i18n="language.label">Idioma</span>
+          <select id="language-select" aria-label="Idioma" data-i18n-aria-label="language.label">
+            <option value="es">Español</option>
+            <option value="pt">Português</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+        <button id="btn-export" class="btn btn-accent" data-i18n-title="action.export" disabled>
+          <span class="icon">&#128229;</span> <span data-i18n="action.export">Exportar</span>
         </button>
       </div>
     </header>
@@ -35,13 +43,13 @@
       <!-- Left Sidebar: Thumbnails -->
       <aside id="sidebar-left" class="sidebar">
         <div class="sidebar-header">
-          <span>Pages</span>
-          <button id="btn-toggle-sidebar" class="btn btn-icon" title="Toggle sidebar">&#9776;</button>
+          <span data-i18n="section.pages">Páginas</span>
+          <button id="btn-toggle-sidebar" class="btn btn-icon" data-i18n-title="sidebar.toggle">&#9776;</button>
         </div>
         <div id="thumbnail-list"></div>
       </aside>
       <!-- Sidebar expand button (visible when collapsed) -->
-      <button id="btn-expand-sidebar" class="btn-expand-sidebar hidden" title="Show pages">&#9776;</button>
+      <button id="btn-expand-sidebar" class="btn-expand-sidebar hidden" data-i18n-title="sidebar.show">&#9776;</button>
 
       <!-- Center: Canvas Viewer -->
       <main id="viewer-container">
@@ -49,9 +57,9 @@
         <div id="drop-zone" class="drop-zone">
           <div class="drop-zone-content">
             <div class="drop-icon">&#128196;</div>
-            <h2>Drop PDF files here</h2>
-            <p>or</p>
-            <button id="btn-browse" class="btn btn-primary">Browse Files</button>
+            <h2 data-i18n="drop.title">Suelta archivos PDF aquí</h2>
+            <p data-i18n="drop.or">o</p>
+            <button id="btn-browse" class="btn btn-primary" data-i18n="drop.browse">Buscar archivos</button>
             <input type="file" id="file-input" accept=".pdf" multiple hidden />
           </div>
         </div>
@@ -66,53 +74,53 @@
         <!-- Loading Overlay -->
         <div id="loading-overlay" class="hidden">
           <div class="spinner"></div>
-          <p>Loading PDF...</p>
+          <p data-i18n="loading.pdf">Cargando PDF...</p>
         </div>
       </main>
 
       <!-- Right Sidebar: Tool Properties -->
       <aside id="sidebar-right" class="sidebar">
         <div class="sidebar-header">
-          <span>Tools</span>
+          <span data-i18n="section.tools">Herramientas</span>
         </div>
         <div id="tool-properties">
           <!-- Tool buttons -->
           <div class="tool-group">
-            <button class="tool-btn active" data-tool="select" title="Select (V)">
+            <button class="tool-btn active" data-tool="select" data-i18n-title="tool.selectTitle">
               <span>&#128270;</span>
-              <small>Select</small>
+              <small data-i18n="tool.select">Seleccionar</small>
             </button>
-            <button class="tool-btn" data-tool="text" title="Add Text (T)">
+            <button class="tool-btn" data-tool="text" data-i18n-title="tool.addTextTitle">
               <span>T</span>
-              <small>Text</small>
+              <small data-i18n="tool.text">Texto</small>
             </button>
-            <button class="tool-btn" data-tool="image" title="Add Image (I)">
+            <button class="tool-btn" data-tool="image" data-i18n-title="tool.addImageTitle">
               <span>&#127748;</span>
-              <small>Image</small>
+              <small data-i18n="tool.image">Imagen</small>
             </button>
-            <button class="tool-btn" data-tool="pen" title="Pen (P)">
+            <button class="tool-btn" data-tool="pen" data-i18n-title="tool.penTitle">
               <span>&#9998;</span>
-              <small>Pen</small>
+              <small data-i18n="tool.pen">Lápiz</small>
             </button>
-            <button class="tool-btn" data-tool="highlighter" title="Highlighter (H)">
+            <button class="tool-btn" data-tool="highlighter" data-i18n-title="tool.highlightTitle">
               <span>&#128396;</span>
-              <small>Highlight</small>
+              <small data-i18n="tool.highlight">Resaltar</small>
             </button>
-            <button class="tool-btn" data-tool="rect" title="Rectangle (R)">
+            <button class="tool-btn" data-tool="rect" data-i18n-title="tool.rectangleTitle">
               <span>&#9645;</span>
-              <small>Rect</small>
+              <small data-i18n="tool.rectangle">Rectángulo</small>
             </button>
-            <button class="tool-btn" data-tool="circle" title="Circle (C)">
+            <button class="tool-btn" data-tool="circle" data-i18n-title="tool.circleTitle">
               <span>&#9711;</span>
-              <small>Circle</small>
+              <small data-i18n="tool.circle">Círculo</small>
             </button>
-            <button class="tool-btn" data-tool="line" title="Line (L)">
+            <button class="tool-btn" data-tool="line" data-i18n-title="tool.lineTitle">
               <span>&#9585;</span>
-              <small>Line</small>
+              <small data-i18n="tool.line">Línea</small>
             </button>
-            <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
+            <button class="tool-btn" data-tool="eraser" data-i18n-title="tool.eraserTitle">
               <span>&#9003;</span>
-              <small>Erase</small>
+              <small data-i18n="tool.eraser">Borrador</small>
             </button>
           </div>
 
@@ -120,63 +128,63 @@
           <div id="tool-options" class="tool-options">
             <!-- Text options -->
             <div id="opt-text" class="opt-panel hidden">
-              <label>Font</label>
+              <label data-i18n="option.font">Fuente</label>
               <select id="opt-font">
                 <option value="Helvetica">Helvetica</option>
                 <option value="Times Roman">Times Roman</option>
                 <option value="Courier">Courier</option>
               </select>
-              <label>Size</label>
+              <label data-i18n="option.size">Tamaño</label>
               <input type="number" id="opt-font-size" value="16" min="6" max="200" />
-              <label>Color</label>
+              <label data-i18n="option.color">Color</label>
               <input type="color" id="opt-text-color" value="#000000" />
-              <label><input type="checkbox" id="opt-bold" /> Bold</label>
-              <label><input type="checkbox" id="opt-italic" /> Italic</label>
+              <label><input type="checkbox" id="opt-bold" /> <span data-i18n="option.bold">Negrita</span></label>
+              <label><input type="checkbox" id="opt-italic" /> <span data-i18n="option.italic">Cursiva</span></label>
             </div>
             <!-- Drawing options -->
             <div id="opt-draw" class="opt-panel hidden">
-              <label>Color</label>
+              <label data-i18n="option.color">Color</label>
               <input type="color" id="opt-stroke-color" value="#000000" />
-              <label>Width</label>
+              <label data-i18n="option.width">Grosor</label>
               <input type="range" id="opt-stroke-width" min="1" max="20" value="3" />
               <span id="opt-stroke-width-val">3px</span>
-              <label>Opacity</label>
+              <label data-i18n="option.opacity">Opacidad</label>
               <input type="range" id="opt-opacity" min="0.1" max="1" step="0.1" value="1" />
               <span id="opt-opacity-val">100%</span>
             </div>
             <!-- Image options -->
             <div id="opt-image" class="opt-panel hidden">
-              <button id="btn-add-image" class="btn btn-small">Choose Image</button>
+              <button id="btn-add-image" class="btn btn-small" data-i18n="image.choose">Elegir imagen</button>
               <input type="file" id="image-input" accept="image/png,image/jpeg,image/svg+xml" hidden />
-              <label>Opacity</label>
+              <label data-i18n="option.opacity">Opacidad</label>
               <input type="range" id="opt-img-opacity" min="0.1" max="1" step="0.1" value="1" />
             </div>
           </div>
 
           <!-- Page Operations -->
           <div class="tool-group page-ops">
-            <h4>Page Ops</h4>
-            <button id="btn-rotate-cw" class="btn btn-small" title="Rotate 90° CW">↻ CW</button>
-            <button id="btn-rotate-ccw" class="btn btn-small" title="Rotate 90° CCW">↺ CCW</button>
-            <button id="btn-rotate-180" class="btn btn-small" title="Rotate 180°">180°</button>
-            <button id="btn-delete-page" class="btn btn-small btn-danger" title="Delete selected pages">Delete</button>
-            <button id="btn-duplicate-page" class="btn btn-small" title="Duplicate page">Duplicate</button>
+            <h4 data-i18n="section.pageOperations">Operaciones de página</h4>
+            <button id="btn-rotate-cw" class="btn btn-small" data-i18n-title="page.rotateClockwiseTitle" data-i18n="page.rotateClockwise">↻ 90°</button>
+            <button id="btn-rotate-ccw" class="btn btn-small" data-i18n-title="page.rotateCounterclockwiseTitle" data-i18n="page.rotateCounterclockwise">↺ 90°</button>
+            <button id="btn-rotate-180" class="btn btn-small" data-i18n-title="page.rotate180Title" data-i18n="page.rotate180">180°</button>
+            <button id="btn-delete-page" class="btn btn-small btn-danger" data-i18n-title="page.deleteTitle" data-i18n="page.delete">Eliminar</button>
+            <button id="btn-duplicate-page" class="btn btn-small" data-i18n-title="page.duplicateTitle" data-i18n="page.duplicate">Duplicar</button>
           </div>
 
           <!-- Split/Merge -->
           <div class="tool-group split-merge">
-            <h4>Split / Merge</h4>
-            <button id="btn-split-selected" class="btn btn-small">Split Selected</button>
-            <button id="btn-split-range" class="btn btn-small">Split by Range</button>
-            <button id="btn-split-n" class="btn btn-small">Split every N</button>
-            <button id="btn-merge-all" class="btn btn-small">Merge All PDFs</button>
+            <h4 data-i18n="section.splitMerge">Dividir / Unir</h4>
+            <button id="btn-split-selected" class="btn btn-small" data-i18n="split.selected">Dividir selección</button>
+            <button id="btn-split-range" class="btn btn-small" data-i18n="split.range">Dividir por rango</button>
+            <button id="btn-split-n" class="btn btn-small" data-i18n="split.everyN">Dividir cada N</button>
+            <button id="btn-merge-all" class="btn btn-small" data-i18n="merge.all">Unir todos los PDF</button>
           </div>
 
           <!-- Batch Selection -->
           <div class="tool-group selection-info">
-            <span id="selection-count">0 pages selected</span>
-            <button id="btn-select-all" class="btn btn-small">Select All</button>
-            <button id="btn-deselect-all" class="btn btn-small">Deselect</button>
+            <span id="selection-count">0 páginas seleccionadas</span>
+            <button id="btn-select-all" class="btn btn-small" data-i18n="selection.all">Seleccionar todo</button>
+            <button id="btn-deselect-all" class="btn btn-small" data-i18n="selection.clear">Deseleccionar</button>
           </div>
         </div>
       </aside>
@@ -185,17 +193,17 @@
     <!-- Bottom Bar -->
     <footer id="bottom-bar">
       <div class="nav-controls">
-        <button id="btn-prev-page" class="btn btn-icon" disabled>&#9664;</button>
+        <button id="btn-prev-page" class="btn btn-icon" data-i18n-title="page.previous" disabled>&#9664;</button>
         <input type="number" id="page-number" value="1" min="1" />
         <span id="page-count">/ 0</span>
-        <button id="btn-next-page" class="btn btn-icon" disabled>&#9654;</button>
+        <button id="btn-next-page" class="btn btn-icon" data-i18n-title="page.next" disabled>&#9654;</button>
       </div>
       <div class="zoom-controls">
-        <button id="btn-zoom-out" class="btn btn-icon">−</button>
+        <button id="btn-zoom-out" class="btn btn-icon" data-i18n-title="zoom.out">−</button>
         <span id="zoom-level">100%</span>
-        <button id="btn-zoom-in" class="btn btn-icon">+</button>
-        <button id="btn-fit-width" class="btn btn-small">Fit Width</button>
-        <button id="btn-fit-page" class="btn btn-small">Fit Page</button>
+        <button id="btn-zoom-in" class="btn btn-icon" data-i18n-title="zoom.in">+</button>
+        <button id="btn-fit-width" class="btn btn-small" data-i18n="zoom.fitWidth">Ajustar al ancho</button>
+        <button id="btn-fit-page" class="btn btn-small" data-i18n="zoom.fitPage">Ajustar a la página</button>
       </div>
     </footer>
 
@@ -208,8 +216,8 @@
         </div>
         <div id="modal-body"></div>
         <div class="modal-footer">
-          <button id="btn-modal-cancel" class="btn">Cancel</button>
-          <button id="btn-modal-ok" class="btn btn-primary">OK</button>
+          <button id="btn-modal-cancel" class="btn" data-i18n="action.cancel">Cancelar</button>
+          <button id="btn-modal-ok" class="btn btn-primary" data-i18n="action.ok">Aceptar</button>
         </div>
       </div>
     </div>
@@ -219,7 +227,7 @@
 
     <!-- Floating Edit Text button (appears when text is selected) -->
     <div id="edit-text-popup" class="edit-text-popup hidden">
-      <button id="btn-edit-selected" class="btn btn-primary btn-small">✏️ Edit Text</button>
+      <button id="btn-edit-selected" class="btn btn-primary btn-small" data-i18n="text.edit">✏️ Editar texto</button>
     </div>
   </div>
 

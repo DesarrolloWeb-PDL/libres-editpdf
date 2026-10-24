@@ -4,6 +4,7 @@
 
 ## Features
 
+- **Interface languages** — Spanish (default), Portuguese, and English, with the selection saved in the browser
 - **View** — Render PDF pages with zoom, fit-to-width, fit-to-page
 - **Navigate** — Page thumbnails, prev/next, direct page jump, arrow keys
 - **Edit annotations** — Text, pen, highlighter, rectangles, circles, lines, images

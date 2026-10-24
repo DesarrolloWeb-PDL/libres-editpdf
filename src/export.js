@@ -7,13 +7,14 @@ import { showToast, setLoading, downloadBuffer } from './utils.js';
 import { pageKey } from './canvas-overlay.js';
 import { saveCurrentPageAnnotations } from './thumbnail-panel.js';
 import { replacePdfPageText } from './pdf-text-rewrite.js';
+import { t } from './i18n.js';
 
 /**
  * Build the final PDF and trigger a download.
  */
 export async function exportPDF() {
   if (state.pages.length === 0) {
-    showToast('No pages to export', 'error');
+    showToast(t('export.noPages'), 'error');
     return;
   }
 
@@ -22,7 +23,7 @@ export async function exportPDF() {
     ? [...state.selectedPages].sort((a, b) => a - b)
     : state.pages.map((_, i) => i);
 
-  setLoading(true, 'Exporting PDF...');
+  setLoading(true, t('export.loading'));
   state.emit('exportStarted');
 
   try {
@@ -85,12 +86,14 @@ export async function exportPDF() {
     const pdfBytes = await outDoc.save();
     downloadBuffer(pdfBytes, fileName);
     const msg = selectedIndices.length < state.pages.length
-      ? `Exported ${selectedIndices.length} page(s) as PDF`
-      : 'PDF exported successfully';
+      ? t(selectedIndices.length === 1 ? 'export.selectedOne' : 'export.selected', {
+        count: selectedIndices.length,
+      })
+      : t('export.success');
     showToast(msg, 'success');
   } catch (err) {
     console.error('Export error:', err);
-    showToast('Export failed: ' + err.message, 'error');
+    showToast(t('export.failed', { error: err.message }), 'error');
   } finally {
     setLoading(false);
     state.emit('exportFinished');

@@ -13,6 +13,7 @@ import {
 import { renderCurrentPage, fitWidth, fitPage } from './pdf-renderer.js';
 import { initFabricCanvas, applyTool, addText, addImage, setTextPlacementMode } from './canvas-overlay.js';
 import { loadPDF, renderPageToDataURL } from './pdf-loader.js';
+import { t } from './i18n.js';
 
 /**
  * Attach all event listeners.
@@ -131,11 +132,11 @@ export function initToolbar() {
     splitSelected([...state.selectedPages].sort((a, b) => a - b));
   });
   document.getElementById('btn-split-range').addEventListener('click', async () => {
-    const range = prompt('Enter page range (e.g. 1-3,5,7-10):');
+    const range = prompt(t('prompt.range'));
     if (range) splitByRange(range);
   });
   document.getElementById('btn-split-n').addEventListener('click', async () => {
-    const n = parseInt(prompt('Split every N pages:'), 10);
+    const n = parseInt(prompt(t('prompt.everyN')), 10);
     if (!isNaN(n) && n > 0) splitEveryN(n);
   });
   document.getElementById('btn-merge-all').addEventListener('click', mergeAll);
@@ -226,12 +227,12 @@ export async function handleFiles(fileList) {
     return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
   });
   if (files.length === 0) {
-    showToast('Please select PDF files', 'error');
+    showToast(t('file.selectPdfs'), 'error');
     return;
   }
 
   const loadingEl = document.getElementById('loading-overlay');
-  loadingEl.querySelector('p').textContent = 'Loading PDF...';
+  loadingEl.querySelector('p').textContent = t('loading.pdf');
   loadingEl.classList.remove('hidden');
 
   try {
@@ -243,7 +244,7 @@ export async function handleFiles(fileList) {
         const header = new Uint8Array(buf.slice(0, 5));
         const magic = String.fromCharCode(...header);
         if (magic !== '%PDF-') {
-          showToast(`"${file.name}" is not a valid PDF file`, 'error');
+          showToast(t('file.invalidPdf', { name: file.name }), 'error');
           continue;
         }
 
@@ -251,13 +252,13 @@ export async function handleFiles(fileList) {
         state.pdfs.push(pdf);
       } catch (loadErr) {
         console.error('Failed to load file:', file.name, loadErr);
-        showToast(`Error loading "${file.name}": ${loadErr.message}`, 'error');
+        showToast(t('file.loadFailed', { name: file.name, error: loadErr.message }), 'error');
         // Continue with other files instead of stopping
       }
     }
 
     if (state.pdfs.length === 0) {
-      showToast('No PDF files could be loaded', 'error');
+      showToast(t('file.noneLoaded'), 'error');
       return;
     }
 
@@ -278,7 +279,7 @@ export async function handleFiles(fileList) {
         console.log('[PDF-ED] After initFabricCanvas, canvas exists?', !!state.fabricCanvas);
       } catch (err) {
         console.error('[PDF-ED] Failed to init canvas:', err);
-        showToast('Canvas initialization failed', 'error');
+        showToast(t('file.canvasFailed'), 'error');
       }
     }
 
@@ -316,7 +317,7 @@ export async function handleFiles(fileList) {
     }
   } catch (err) {
     console.error('handleFiles unexpected error:', err);
-    showToast('Failed to load PDF: ' + err.message, 'error');
+    showToast(t('file.loadError', { error: err.message }), 'error');
   } finally {
     loadingEl.classList.add('hidden');
   }
