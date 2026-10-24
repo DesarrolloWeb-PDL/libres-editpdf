@@ -518,6 +518,13 @@ html, body {
   color: #fff;
 }
 
+.tool-btn-wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+}
+
 .tool-options {
   padding: 0 10px;
 }
@@ -663,12 +670,151 @@ html, body {
   margin-bottom: 10px;
 }
 
+.modal-body > p {
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.section-review-list,
+.section-download-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 45vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.section-review-row {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.section-review-toggle,
+.section-ai-consent {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  margin: 0 !important;
+}
+
+.section-review-toggle input,
+.section-ai-consent input {
+  width: auto !important;
+  margin: 0 !important;
+  accent-color: var(--accent);
+}
+
+.section-review-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 108px;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.section-review-fields > input,
+.section-review-fields label input {
+  min-width: 0;
+  margin: 0;
+}
+
+.section-review-fields label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 11px;
+}
+
+.section-review-fields label input {
+  width: 54px;
+  padding: 5px;
+}
+
+.section-review-range {
+  grid-column: 1 / -1;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.section-ai-note,
+.section-ai-warning {
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.section-ai-warning {
+  padding: 8px;
+  border-left: 3px solid #d9a441;
+  background: rgba(217, 164, 65, 0.1);
+}
+
+.section-ai-consent {
+  margin: 10px 0 !important;
+  font-size: 12px !important;
+}
+
+.section-ai-button {
+  margin-top: 8px;
+}
+
+.section-download-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.section-download-row > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section-download-row strong {
+  overflow-wrap: anywhere;
+}
+
+.section-download-row span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.section-download-row .btn {
+  width: auto;
+  flex-shrink: 0;
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+  .section-review-row {
+    grid-template-columns: 1fr;
+  }
+
+  .section-download-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 /* Toast */

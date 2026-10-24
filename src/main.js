@@ -129,10 +129,12 @@ function showToolOptions() {
   const textPanel = document.getElementById('opt-text');
   const drawPanel = document.getElementById('opt-draw');
   const imagePanel = document.getElementById('opt-image');
+  const coverHelp = document.getElementById('cover-text-help');
 
   textPanel.classList.add('hidden');
   drawPanel.classList.add('hidden');
   imagePanel.classList.add('hidden');
+  coverHelp.classList.toggle('hidden', state.activeTool !== 'cover-text');
 
   if (state.activeTool === 'text') textPanel.classList.remove('hidden');
   else if (['pen', 'highlighter', 'rect', 'circle', 'line'].includes(state.activeTool)) drawPanel.classList.remove('hidden');

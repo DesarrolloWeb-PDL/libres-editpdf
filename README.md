@@ -8,11 +8,11 @@
 - **View** — Render PDF pages with zoom, fit-to-width, fit-to-page
 - **Navigate** — Page thumbnails, prev/next, direct page jump, arrow keys
 - **Edit annotations** — Text, pen, highlighter, rectangles, circles, lines, images
-- **Experimental text replacement** — Replace simple selectable ASCII text in a single PDF text operation
+- **Text replacement** — Replace supported native PDF text, or cover an area and write over image-based or unsupported text
 - **Eraser** — Remove annotations
 - **Page operations** — Rotate (90°/180°), delete, duplicate
 - **Reorder** — Drag & drop thumbnails to reorder pages
-- **Split** — Extract selected pages, split by range, split every N pages
+- **Split** — Extract selected pages, split by range or page count, or detect and review document sections
 - **Merge** — Combine multiple PDFs into one
 - **Export** — Download edited PDF with flattened annotations
 - **Undo/Redo** — Full history with Ctrl+Z / Ctrl+Y
@@ -24,18 +24,29 @@
 - [pdf-lib](https://pdf-lib.org/) — PDF manipulation (rotate, split, merge, export)
 - [Fabric.js](http://fabricjs.com/) — annotation canvas overlay
 
-### Experimental text replacement
+### Splitting a long document by section
 
-To replace existing PDF text, stay in Select mode and click a selectable text span. The editor checks
-that the PDF uses a supported text operation before showing the replacement preview. The separate
-Add text tool creates an annotation overlay; it does not change existing PDF text. Export rewrites a
-single ASCII hex-string `Tj` operation in the PDF content stream instead of flattening the replacement
-into the annotation image.
+Use **Detect sections** to analyze a single PDF locally. The editor checks PDF bookmarks and
+prominent headings, then lets you review section names and start pages before preparing separate
+PDFs. Each section is prepared on demand and downloaded individually.
 
-This prototype deliberately rejects ambiguous or unsupported text blocks. It does not yet support
-embedded/CID font encodings, non-ASCII text, `TJ` arrays, multiple text-show operations in one text
-object, scanned pages, or reliable reflow. It is not a secure-redaction feature: other PDF structures
-or previous revisions may still contain the original text.
+If local detection needs help, **Review with online AI** is optional. It requires an OpenAI
+Chat Completions-compatible endpoint, model, API key, and explicit consent. The key is not saved;
+the first 1,200 extracted characters of each page are sent in batches to that endpoint. The key is
+accessible to the browser while in use; for a public deployment, use a protected backend proxy
+instead of entering a personal key. Scanned documents need OCR before AI can analyze their text.
+AI suggestions must be reviewed before export.
+
+### Replacing text
+
+To edit native PDF text, stay in Select mode and click a selectable text span. Supported content is
+rewritten in the PDF; unsupported or ambiguous content is rejected. Some embedded fonts only allow
+replacement glyphs with matching widths.
+
+For image-based text or unsupported content, use **Cover and write** and drag a rectangle over the
+area. Choose a solid cover color and enter the new text. This is a visual overlay, not a native text
+edit; it may not blend into textured backgrounds and is not a secure-redaction feature. **Add text**
+continues to place text without covering the original.
 
 ## Run locally
 

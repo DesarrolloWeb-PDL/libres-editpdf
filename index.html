@@ -94,6 +94,10 @@
               <span>T</span>
               <small data-i18n="tool.text">Añadir texto</small>
             </button>
+            <button class="tool-btn tool-btn-wide" data-tool="cover-text" data-i18n-title="tool.coverTextTitle">
+              <span>▰</span>
+              <small data-i18n="tool.coverText">Tapar y escribir</small>
+            </button>
             <button class="tool-btn" data-tool="image" data-i18n-title="tool.addImageTitle">
               <span>&#127748;</span>
               <small data-i18n="tool.image">Imagen</small>
@@ -124,6 +128,7 @@
             </button>
           </div>
           <p class="text-edit-help" data-i18n="text.help">Para cambiar texto existente, usa Seleccionar y haz clic en el texto del PDF. «Añadir texto» crea una capa encima.</p>
+          <p id="cover-text-help" class="text-edit-help hidden" data-i18n="text.coverHelp">Arrastra un rectángulo sobre el texto. Luego elige el color de fondo y escribe el nuevo texto. En fondos con textura, la cobertura puede notarse.</p>
 
           <!-- Tool Options -->
           <div id="tool-options" class="tool-options">
@@ -178,6 +183,7 @@
             <button id="btn-split-selected" class="btn btn-small" data-i18n="split.selected">Dividir selección</button>
             <button id="btn-split-range" class="btn btn-small" data-i18n="split.range">Dividir por rango</button>
             <button id="btn-split-n" class="btn btn-small" data-i18n="split.everyN">Dividir cada N</button>
+            <button id="btn-detect-sections" class="btn btn-small btn-primary" data-i18n="section.detectButton">Detectar secciones</button>
             <button id="btn-merge-all" class="btn btn-small" data-i18n="merge.all">Unir todos los PDF</button>
           </div>
 
@@ -215,7 +221,7 @@
           <span id="modal-title"></span>
           <button id="btn-modal-close" class="btn btn-icon">&times;</button>
         </div>
-        <div id="modal-body"></div>
+        <div id="modal-body" class="modal-body"></div>
         <div class="modal-footer">
           <button id="btn-modal-cancel" class="btn" data-i18n="action.cancel">Cancelar</button>
           <button id="btn-modal-ok" class="btn btn-primary" data-i18n="action.ok">Aceptar</button>

@@ -13,12 +13,15 @@ import {
 import { renderCurrentPage, fitWidth, fitPage } from './pdf-renderer.js';
 import { initFabricCanvas, applyTool, addText, addImage, setTextPlacementMode } from './canvas-overlay.js';
 import { loadPDF, renderPageToDataURL } from './pdf-loader.js';
+import { initSectionSplitter } from './section-splitter.js';
 import { t } from './i18n.js';
 
 /**
  * Attach all event listeners.
  */
 export function initToolbar() {
+  initSectionSplitter();
+
   // File operations
   document.getElementById('btn-open-file').addEventListener('click', () => {
     document.getElementById('hidden-file-input').click();

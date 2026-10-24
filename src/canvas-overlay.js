@@ -4,6 +4,7 @@
 import { fabric } from 'fabric';
 import * as state from './app.js';
 import { t } from './i18n.js';
+import { showModal, showToast } from './utils.js';
 
 let canvas = null;
 let isDrawing = false;
@@ -141,6 +142,12 @@ export function pageKey(idx) {
 
 export function applyTool(tool) {
   if (!canvas) return;
+  if (tool !== currentTool && isDrawing && tempShape) {
+    canvas.remove(tempShape);
+    isDrawing = false;
+    drawStart = null;
+    tempShape = null;
+  }
   currentTool = tool;
   textPlacementMode = false; // cancel text placement on any tool change
   canvas.isDrawingMode = false;
@@ -203,6 +210,10 @@ export function applyTool(tool) {
       canvas.forEachObject((o) => { o.selectable = false; o.evented = false; });
       canvas.defaultCursor = 'crosshair';
       break;
+    case 'cover-text':
+      canvas.forEachObject((o) => { o.selectable = false; o.evented = false; });
+      canvas.defaultCursor = 'crosshair';
+      break;
     case 'text':
     case 'image':
       canvas.forEachObject((o) => { o.selectable = true; o.evented = true; });
@@ -251,7 +262,7 @@ function onMouseDown(opt) {
     return;
   }
 
-  if (!['rect', 'circle', 'line'].includes(tool)) return;
+  if (!['rect', 'circle', 'line', 'cover-text'].includes(tool)) return;
 
   isDrawing = true;
   const pointer = canvas.getPointer(opt.e);
@@ -260,7 +271,19 @@ function onMouseDown(opt) {
   const color = document.getElementById('opt-stroke-color').value;
   const sw = parseInt(document.getElementById('opt-stroke-width').value, 10);
 
-  if (tool === 'rect') {
+  if (tool === 'cover-text') {
+    tempShape = new fabric.Rect({
+      left: pointer.x,
+      top: pointer.y,
+      width: 0,
+      height: 0,
+      fill: 'rgba(0, 117, 255, 0.18)',
+      stroke: '#0075ff',
+      strokeWidth: 1,
+      selectable: false,
+      evented: false,
+    });
+  } else if (tool === 'rect') {
     tempShape = new fabric.Rect({
       left: pointer.x, top: pointer.y,
       width: 0, height: 0,
@@ -289,7 +312,7 @@ function onMouseMove(opt) {
   const pointer = canvas.getPointer(opt.e);
   const tool = state.activeTool;
 
-  if (tool === 'rect') {
+  if (tool === 'rect' || tool === 'cover-text') {
     tempShape.set({
       left: Math.min(drawStart.x, pointer.x),
       top: Math.min(drawStart.y, pointer.y),
@@ -311,13 +334,105 @@ function onMouseMove(opt) {
 
 function onMouseUp() {
   if (isDrawing && tempShape) {
-    tempShape.set({ selectable: true, evented: true });
-    canvas.setActiveObject(tempShape);
-    state.emit('annotationChanged');
+    if (currentTool === 'cover-text') {
+      const region = {
+        left: tempShape.left,
+        top: tempShape.top,
+        width: tempShape.width,
+        height: tempShape.height,
+      };
+      canvas.remove(tempShape);
+      finishCoverText(region).catch((error) => {
+        console.error('Cover text error:', error);
+        showToast(t('text.editFailed', { error: error.message }), 'error');
+      });
+    } else {
+      tempShape.set({ selectable: true, evented: true });
+      canvas.setActiveObject(tempShape);
+      state.emit('annotationChanged');
+    }
   }
   isDrawing = false;
   drawStart = null;
   tempShape = null;
+}
+
+async function finishCoverText(region) {
+  if (region.width < 16 || region.height < 12) {
+    showToast(t('text.coverTooSmall'), 'error');
+    canvas.renderAll();
+    return;
+  }
+
+  const initialFontSize = Math.max(6, Math.min(200, Math.round(region.height * 0.65)));
+  const accepted = await showModal(
+    t('text.coverTitle'),
+    `<label for="cover-replacement">${t('text.coverReplacement')}</label>
+    <input id="cover-replacement" type="text" maxlength="500" />
+    <label for="cover-font">${t('option.font')}</label>
+    <select id="cover-font">
+      <option value="Helvetica">Helvetica</option>
+      <option value="Times Roman">Times Roman</option>
+      <option value="Courier">Courier</option>
+    </select>
+    <label for="cover-background">${t('text.coverBackground')}</label>
+    <input id="cover-background" type="color" value="#ffffff" />
+    <label for="cover-color">${t('text.coverColor')}</label>
+    <input id="cover-color" type="color" value="#000000" />
+    <label for="cover-size">${t('text.coverSize')}</label>
+    <input id="cover-size" type="number" min="6" max="200" value="${initialFontSize}" />
+    <p>${t('text.coverNotice')}</p>`
+  );
+  if (!accepted) return;
+
+  const replacementText = document.getElementById('cover-replacement').value;
+  if (!replacementText || /[\u0000-\u001f\u007f]/.test(replacementText)) {
+    showToast(t('text.coverInvalid'), 'error');
+    return;
+  }
+
+  const backgroundColor = document.getElementById('cover-background').value;
+  const textColor = document.getElementById('cover-color').value;
+  const requestedSize = Number.parseInt(document.getElementById('cover-size').value, 10);
+  const fontSize = Number.isFinite(requestedSize)
+    ? Math.max(6, Math.min(200, requestedSize, region.height - 4))
+    : initialFontSize;
+
+  saveAnnotations(pageKey(state.currentPageIndex));
+  state.pushHistory();
+
+  const mask = new fabric.Rect({
+    left: region.left,
+    top: region.top,
+    width: region.width,
+    height: region.height,
+    fill: backgroundColor,
+    selectable: true,
+    evented: true,
+  });
+  const text = new fabric.IText(replacementText, {
+    left: region.left + 4,
+    top: region.top + Math.max(2, (region.height - fontSize) / 2),
+    fontFamily: document.getElementById('cover-font').value,
+    fontSize,
+    fill: textColor,
+    fontWeight: document.getElementById('opt-bold').checked ? 'bold' : 'normal',
+    fontStyle: document.getElementById('opt-italic').checked ? 'italic' : 'normal',
+    selectable: true,
+    evented: true,
+  });
+  const availableWidth = Math.max(1, region.width - 8);
+  if (text.width > availableWidth) {
+    text.set({ scaleX: availableWidth / text.width });
+  }
+  text.set({ left: region.left + (region.width - text.getScaledWidth()) / 2 });
+
+  canvas.add(mask, text);
+  canvas.setActiveObject(text);
+  saveAnnotations(pageKey(state.currentPageIndex));
+  state.emit('annotationChanged');
+  state.pushHistory();
+  canvas.renderAll();
 }
 
 // ---- Eraser ----
