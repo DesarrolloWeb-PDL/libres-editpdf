@@ -65,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-redo').disabled = state.historyIndex >= state.historyStack.length - 1;
   });
 
+  state.on('snapshotRestored', () => {
+    loadPageAnnotations(state.currentPageIndex);
+  });
+
   // ---- Drag & Drop on viewer ----
 
   const viewer = document.getElementById('viewer-container');

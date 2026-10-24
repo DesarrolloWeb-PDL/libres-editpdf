@@ -297,15 +297,11 @@ html, body {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 5;
+  z-index: 11;
   overflow: hidden;
   opacity: 0.25;
   line-height: 1;
   pointer-events: none; /* Pass through clicks to Fabric.js canvas by default */
-}
-
-#text-layer.text-select-mode {
-  pointer-events: auto; /* Enable text selection only in select mode */
 }
 
 #text-layer > span {
@@ -313,6 +309,11 @@ html, body {
   position: absolute;
   white-space: pre;
   transform-origin: 0% 0%;
+  pointer-events: none;
+}
+
+#text-layer.text-select-mode > span {
+  pointer-events: auto;
 }
 
 #text-layer > span::selection {

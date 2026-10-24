@@ -7,6 +7,7 @@
 - **View** — Render PDF pages with zoom, fit-to-width, fit-to-page
 - **Navigate** — Page thumbnails, prev/next, direct page jump, arrow keys
 - **Edit annotations** — Text, pen, highlighter, rectangles, circles, lines, images
+- **Experimental text replacement** — Replace simple selectable ASCII text in a single PDF text operation
 - **Eraser** — Remove annotations
 - **Page operations** — Rotate (90°/180°), delete, duplicate
 - **Reorder** — Drag & drop thumbnails to reorder pages
@@ -21,6 +22,17 @@
 - [pdf.js](https://mozilla.github.io/pdf.js/) — PDF rendering
 - [pdf-lib](https://pdf-lib.org/) — PDF manipulation (rotate, split, merge, export)
 - [Fabric.js](http://fabricjs.com/) — annotation canvas overlay
+
+### Experimental text replacement
+
+Click a selectable text span in Select mode and enter its replacement. Export rewrites a single ASCII
+hex-string `Tj` operation in the PDF content stream instead of flattening the replacement into the
+annotation image.
+
+This prototype deliberately rejects ambiguous or unsupported text blocks. It does not yet support
+embedded/CID font encodings, non-ASCII text, `TJ` arrays, multiple text-show operations in one text
+object, scanned pages, or reliable reflow. It is not a secure-redaction feature: other PDF structures
+or previous revisions may still contain the original text.
 
 ## Run locally
 

@@ -22,6 +22,9 @@ export let fabricCanvas = null;
 /** Per-page fabric JSON snapshots for undo/redo. */
 export const pageAnnotations = {};
 
+/** Pending native text replacements keyed by source PDF page. */
+export const pageTextEdits = {};
+
 let listeners = {};
 
 /**
@@ -48,6 +51,7 @@ export function pushHistory() {
     pages: pages.map((p) => ({ ...p })),
     currentPageIndex,
     annotations: JSON.parse(JSON.stringify(pageAnnotations)),
+    textEdits: JSON.parse(JSON.stringify(pageTextEdits)),
   };
   historyStack = historyStack.slice(0, historyIndex + 1);
   historyStack.push(snapshot);
@@ -63,9 +67,48 @@ export function restoreSnapshot(snapshot) {
   currentPageIndex = snapshot.currentPageIndex;
   Object.keys(pageAnnotations).forEach((k) => delete pageAnnotations[k]);
   Object.assign(pageAnnotations, JSON.parse(JSON.stringify(snapshot.annotations)));
+  Object.keys(pageTextEdits).forEach((k) => delete pageTextEdits[k]);
+  Object.assign(pageTextEdits, JSON.parse(JSON.stringify(snapshot.textEdits || {})));
   recalcTotal();
   emit('pagesChanged');
+  emit('snapshotRestored');
   emit('historyChanged');
+}
+
+export function removePageTextEdits(pdfIndex, pageIndex) {
+  const entries = Object.entries(pageTextEdits);
+  for (const [key] of entries) {
+    const match = key.match(/^(\d+)_(\d+)$/);
+    if (!match || Number(match[1]) !== pdfIndex) continue;
+
+    const currentPageIndex = Number(match[2]);
+    if (currentPageIndex === pageIndex) delete pageTextEdits[key];
+    else if (currentPageIndex > pageIndex) {
+      pageTextEdits[`${pdfIndex}_${currentPageIndex - 1}`] = pageTextEdits[key];
+      delete pageTextEdits[key];
+    }
+  }
+}
+
+export function duplicatePageTextEdits(pdfIndex, pageIndex) {
+  const sourceKey = `${pdfIndex}_${pageIndex}`;
+  const sourceEdits = pageTextEdits[sourceKey];
+  const entries = Object.entries(pageTextEdits);
+
+  for (const [key] of entries) {
+    const match = key.match(/^(\d+)_(\d+)$/);
+    if (!match || Number(match[1]) !== pdfIndex) continue;
+
+    const currentPageIndex = Number(match[2]);
+    if (currentPageIndex > pageIndex) {
+      pageTextEdits[`${pdfIndex}_${currentPageIndex + 1}`] = pageTextEdits[key];
+      delete pageTextEdits[key];
+    }
+  }
+
+  if (sourceEdits) {
+    pageTextEdits[`${pdfIndex}_${pageIndex + 1}`] = JSON.parse(JSON.stringify(sourceEdits));
+  }
 }
 
 export function undo() {

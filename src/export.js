@@ -6,6 +6,7 @@ import * as state from './app.js';
 import { showToast, setLoading, downloadBuffer } from './utils.js';
 import { pageKey } from './canvas-overlay.js';
 import { saveCurrentPageAnnotations } from './thumbnail-panel.js';
+import { replacePdfPageText } from './pdf-text-rewrite.js';
 
 /**
  * Build the final PDF and trigger a download.
@@ -29,18 +30,27 @@ export async function exportPDF() {
     saveCurrentPageAnnotations();
 
     const outDoc = await PDFDocument.create();
+    const sourceDocs = new Map();
 
     // Copy selected pages in order
     for (const i of selectedIndices) {
       const { pdfIndex, pageIndex } = state.pages[i];
       const srcBytes = state.pdfs[pdfIndex].pdfBytes;
 
-      // Load fresh copy for each source PDF
-      const loadBytes = srcBytes instanceof Uint8Array
-        ? new Uint8Array(srcBytes)
-        : new Uint8Array(srcBytes.slice(0));
+      let srcDoc = sourceDocs.get(pdfIndex);
+      if (!srcDoc) {
+        const loadBytes = srcBytes instanceof Uint8Array
+          ? new Uint8Array(srcBytes)
+          : new Uint8Array(srcBytes.slice(0));
+        srcDoc = await PDFDocument.load(loadBytes);
+        sourceDocs.set(pdfIndex, srcDoc);
+      }
 
-      const srcDoc = await PDFDocument.load(loadBytes);
+      const textEdits = state.pageTextEdits[pageKey(i)] || [];
+      for (const edit of textEdits) {
+        replacePdfPageText(srcDoc, pageIndex, edit.originalText, edit.replacementText);
+      }
+
       const [copied] = await outDoc.copyPages(srcDoc, [pageIndex]);
       outDoc.addPage(copied);
     }
@@ -106,7 +116,12 @@ async function renderOverlayToPNG(pageIdx, jsonStr) {
     });
 
     tmpFabric.loadFromJSON(jsonStr, () => {
+      tmpFabric.getObjects()
+        .filter((object) => object.pdfTextEdit)
+        .forEach((object) => tmpFabric.remove(object));
+
       if (tmpFabric.getObjects().length === 0) {
+        tmpFabric.dispose();
         resolve(null);
         return;
       }

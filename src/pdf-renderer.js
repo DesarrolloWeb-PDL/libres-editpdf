@@ -79,6 +79,8 @@ async function renderTextLayer(page, viewport) {
         viewport: viewport,
       });
       await textLayer.render();
+      textLayerDiv.style.width = `${viewport.width}px`;
+      textLayerDiv.style.height = `${viewport.height}px`;
       console.log('[PDF-ED] text layer rendered, children:', textLayerDiv.children.length);
     } else {
       console.log('[PDF-ED] WARNING: pdfjsLib.TextLayer not available');

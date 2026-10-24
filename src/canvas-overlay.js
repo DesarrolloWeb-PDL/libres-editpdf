@@ -125,7 +125,7 @@ export function loadAnnotations(pageKey) {
  */
 export function saveAnnotations(pageKey) {
   if (!canvas) return;
-  state.pageAnnotations[pageKey] = JSON.stringify(canvas.toJSON());
+  state.pageAnnotations[pageKey] = JSON.stringify(canvas.toJSON(['pdfTextEdit']));
 }
 
 /**
@@ -155,17 +155,18 @@ export function applyTool(tool) {
   const textLayer = document.getElementById('text-layer');
   const isSelect = tool === 'select';
 
-  // Upper canvas: blocks events in draw mode, transparent in select mode
+  // Text spans sit above Fabric in select mode; empty areas still reach Fabric.
   if (upperCanvas) {
-    upperCanvas.style.pointerEvents = isSelect ? 'none' : 'auto';
+    upperCanvas.style.pointerEvents = 'auto';
   }
-  // PDF canvas: must be transparent in select mode so text layer receives clicks
+  // The PDF canvas is visual only; Fabric handles annotation interactions.
   if (pdfCanvas) {
-    pdfCanvas.style.pointerEvents = isSelect ? 'none' : 'auto';
+    pdfCanvas.style.pointerEvents = 'none';
   }
-  // Text layer: receives clicks in select mode only
+  // The layer itself passes through; its text spans are interactive in select mode.
   if (textLayer) {
-    textLayer.style.pointerEvents = isSelect ? 'auto' : 'none';
+    textLayer.style.pointerEvents = 'none';
+    textLayer.classList.toggle('text-select-mode', isSelect);
   }
 
   // Remove temp listeners

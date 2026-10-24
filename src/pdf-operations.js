@@ -72,6 +72,7 @@ export async function deletePage(pageGlobalIndex) {
   const doc = await loadDoc(pdf.pdfBytes);
   doc.removePage(pageIndex);
   await saveAndReload(pdf, doc);
+  state.removePageTextEdits(pdfIndex, pageIndex);
   state.rebuildPages();
   showToast(`Deleted page ${pageGlobalIndex + 1}`, 'success');
 }
@@ -95,6 +96,7 @@ export async function duplicatePage(pageGlobalIndex) {
   mergedDoc.insertPage(pageIndex + 1, appended[0]);
   await saveAndReload(pdf, mergedDoc);
 
+  state.duplicatePageTextEdits(pdfIndex, pageIndex);
   state.rebuildPages();
   showToast(`Duplicated page ${pageGlobalIndex + 1}`, 'success');
 }

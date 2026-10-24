@@ -5,6 +5,9 @@
  */
 import * as state from './app.js';
 import { fabric } from 'fabric';
+import { showModal, showToast } from './utils.js';
+import { saveCurrentPageAnnotations } from './thumbnail-panel.js';
+import { pageKey } from './canvas-overlay.js';
 
 /**
  * Initialize text editing. Call once after DOM ready.
@@ -37,7 +40,10 @@ export function initTextEdit() {
     e.preventDefault();
     e.stopPropagation();
 
-    editSpanText(clickedSpan);
+    editSpanText(clickedSpan).catch((err) => {
+      console.error('Text edit error:', err);
+      showToast('Text edit failed: ' + err.message, 'error');
+    });
   }, true); // capture phase to run before Fabric.js
 }
 
@@ -74,9 +80,32 @@ function getSpanAtPoint(x, y, textLayer) {
 /**
  * Redact a single text span and replace with editable Fabric.js text.
  */
-function editSpanText(span) {
+async function editSpanText(span) {
   if (!state.fabricCanvas) return;
   const canvas = state.fabricCanvas;
+  const originalText = span.textContent.trim();
+  if (!/^[\x20-\x7e]+$/.test(originalText)) {
+    showToast('This prototype supports printable ASCII text only', 'error');
+    return;
+  }
+
+  const editDialog = showModal(
+    'Edit PDF text',
+    '<label for="pdf-text-replacement">Replacement text</label><input id="pdf-text-replacement" type="text" />'
+  );
+  const replacementInput = document.getElementById('pdf-text-replacement');
+  replacementInput.value = originalText;
+  replacementInput.focus();
+  replacementInput.select();
+  const accepted = await editDialog;
+  if (!accepted) return;
+
+  const replacementText = replacementInput.value;
+  if (replacementText === originalText) return;
+  if (!/^[\x20-\x7e]+$/.test(replacementText)) {
+    showToast('The prototype supports non-empty printable ASCII text only', 'error');
+    return;
+  }
 
   // Get the span's position relative to the canvas wrapper
   const canvasWrapper = document.getElementById('canvas-wrapper');
@@ -96,7 +125,18 @@ function editSpanText(span) {
   const computed = getComputedStyle(span);
   const fontSize = parseFloat(computed.fontSize) || 12;
   const fontFamily = computed.fontFamily || 'Helvetica';
+  const color = computed.color || '#000000';
   const scaledFontSize = fontSize * Math.min(scaleX, scaleY);
+
+  const key = pageKey(state.currentPageIndex);
+  const edits = state.pageTextEdits[key] || [];
+  if (edits.some((edit) => edit.originalText === originalText)) {
+    showToast('This text was already edited on the page', 'error');
+    return;
+  }
+
+  saveCurrentPageAnnotations();
+  state.pushHistory();
 
   // 1. White rectangle (redaction)
   const redaction = new fabric.Rect({
@@ -108,24 +148,30 @@ function editSpanText(span) {
     stroke: 'transparent',
     selectable: false,
     evented: false,
+    pdfTextEdit: true,
   });
   canvas.add(redaction);
 
-  // 2. Editable text
-  const text = new fabric.IText(span.textContent.trim(), {
+  // 2. Preview the text that will replace the original content on export.
+  const text = new fabric.IText(replacementText, {
     left: x,
     top: y,
     fontFamily: fontFamily,
     fontSize: scaledFontSize,
-    fill: '#000000',
-    selectable: true,
-    evented: true,
-    editable: true,
+    fill: color,
+    selectable: false,
+    evented: false,
     width: w,
+    pdfTextEdit: true,
   });
   canvas.add(text);
-  canvas.setActiveObject(text);
 
+  state.pageTextEdits[key] = [
+    ...edits,
+    { originalText, replacementText },
+  ];
+  saveCurrentPageAnnotations();
   state.emit('annotationChanged');
+  state.pushHistory();
   canvas.renderAll();
 }
