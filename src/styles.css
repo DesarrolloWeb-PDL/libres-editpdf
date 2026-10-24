@@ -481,6 +481,13 @@ html, body {
   padding: 10px;
 }
 
+.text-edit-help {
+  padding: 0 10px 10px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .tool-btn {
   display: flex;
   flex-direction: column;

@@ -3,6 +3,7 @@
  */
 import { fabric } from 'fabric';
 import * as state from './app.js';
+import { t } from './i18n.js';
 
 let canvas = null;
 let isDrawing = false;
@@ -336,7 +337,7 @@ function eraserDown(opt) {
  * Add a text box.
  */
 export function addText(opts = {}) {
-  const text = new fabric.IText(opts.text || 'Double-click to edit', {
+  const text = new fabric.IText(opts.text || t('text.annotationPlaceholder'), {
     left: opts.left || 50,
     top: opts.top || 50,
     fontFamily: opts.font || 'Helvetica',

@@ -9,6 +9,8 @@ import { showModal, showToast } from './utils.js';
 import { saveCurrentPageAnnotations } from './thumbnail-panel.js';
 import { pageKey } from './canvas-overlay.js';
 import { t } from './i18n.js';
+import { PDFDocument } from 'pdf-lib';
+import { replacePdfPageText } from './pdf-text-rewrite.js';
 
 /**
  * Initialize text editing. Call once after DOM ready.
@@ -85,8 +87,8 @@ async function editSpanText(span) {
   if (!state.fabricCanvas) return;
   const canvas = state.fabricCanvas;
   const originalText = span.textContent.trim();
-  if (!/^[\x20-\x7e]+$/.test(originalText)) {
-    showToast(t('text.asciiOnly'), 'error');
+  if (!originalText || /[\u0000-\u001f\u007f]/.test(originalText)) {
+    showToast(t('text.invalidInput'), 'error');
     return;
   }
 
@@ -103,10 +105,18 @@ async function editSpanText(span) {
 
   const replacementText = replacementInput.value;
   if (replacementText === originalText) return;
-  if (!/^[\x20-\x7e]+$/.test(replacementText)) {
-    showToast(t('text.replacementAsciiOnly'), 'error');
+  if (!replacementText || /[\u0000-\u001f\u007f]/.test(replacementText)) {
+    showToast(t('text.invalidInput'), 'error');
     return;
   }
+
+  const { pdfIndex, pageIndex } = state.pages[state.currentPageIndex];
+  const sourceBytes = state.pdfs[pdfIndex].pdfBytes;
+  const validationBytes = sourceBytes instanceof Uint8Array
+    ? new Uint8Array(sourceBytes)
+    : new Uint8Array(sourceBytes.slice(0));
+  const validationDoc = await PDFDocument.load(validationBytes);
+  replacePdfPageText(validationDoc, pageIndex, originalText, replacementText);
 
   // Get the span's position relative to the canvas wrapper
   const canvasWrapper = document.getElementById('canvas-wrapper');

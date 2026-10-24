@@ -26,9 +26,11 @@
 
 ### Experimental text replacement
 
-Click a selectable text span in Select mode and enter its replacement. Export rewrites a single ASCII
-hex-string `Tj` operation in the PDF content stream instead of flattening the replacement into the
-annotation image.
+To replace existing PDF text, stay in Select mode and click a selectable text span. The editor checks
+that the PDF uses a supported text operation before showing the replacement preview. The separate
+Add text tool creates an annotation overlay; it does not change existing PDF text. Export rewrites a
+single ASCII hex-string `Tj` operation in the PDF content stream instead of flattening the replacement
+into the annotation image.
 
 This prototype deliberately rejects ambiguous or unsupported text blocks. It does not yet support
 embedded/CID font encodings, non-ASCII text, `TJ` arrays, multiple text-show operations in one text
